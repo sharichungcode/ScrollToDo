@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScrollToDo - Organize, Prioritize, and Conquer</title>
+    {% load static %}
+    <link href="{% static 'tasks/styles.css' %}" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">ScrollToDo</a>
+            
+            <div class="justify-content-end" id="navbarNav">
+                <a href="login.html" class="btn btn-outline-primary">Sign In</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="container-flex text-center py-5 bg-primary text-white shadow-lg">
+        <h1 class="fw-bold display-4">Swipe, Drop, Done.</h1>
+        <p class="lead">ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.</p>
+        <a href="signup.html" class="btn btn-light btn-lg mt-3">Get Started – It’s Free!</a>
+    </header>
+
+    <!-- Features Section -->
+    <section class="container py-5">
+        <div class="row g-4">
+            <div class="col-md-4 d-flex align-items-stretch text-center">
+                <div class="p-4 border rounded bg-white shadow-sm h-100">
+                    <h3 class="fw-bold">📌 Smart Prioritization</h3>
+                    <p class="text-muted">Sort tasks effortlessly with drag & drop into your Priority Matrix.</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="p-4 border rounded bg-white shadow-sm h-100">
+                    <h3 class="fw-bold">📅 Stay on Track</h3>
+                    <p class="text-muted">Never miss a deadline with automated reminders and progress tracking.</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="p-4 border rounded bg-white shadow-sm h-100">
+                    <h3 class="fw-bold">📊 Productivity Insights</h3>
+                    <p class="text-muted">Get real-time analytics to boost your efficiency and productivity.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="container py-5 text-center">
+        <h2 class="fw-bold">How ScrollToDo Works</h2>
+        <div class="row g-4 mt-4">
+            <div class="col-md-4">
+                <div class="p-4 border rounded bg-white shadow-sm h-100">
+                    <h4 class="fw-bold">1️⃣ Add Your Tasks</h4>
+                    <p class="text-muted">Quickly capture tasks and organize them in your to-do list.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 border rounded bg-white shadow-sm h-100">
+                    <h4 class="fw-bold">2️⃣ Drag & Prioritize</h4>
+                    <p class="text-muted">Use the Priority Matrix to focus on what truly matters.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 border rounded bg-white shadow-sm h-100">
+                    <h4 class="fw-bold">3️⃣ Get Things Done</h4>
+                    <p class="text-muted">Track progress, mark tasks complete, and boost productivity.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call-to-Action Section -->
+    <section class="container-flex text-center py-5">
+        <h2 class="fw-bold">Get More Done, Effortlessly</h2>
+        <p class="lead text-muted">Join thousands who have boosted their productivity with ScrollToDo.</p>
+        <a href="signup.html" class="btn btn-primary btn-lg">Sign Up for Free</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        <p class="mb-0">© 2025 ScrollToDo. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
