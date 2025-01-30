@@ -1,4 +1,5 @@
 # ScrollToDo
+[Deployed Website](https://scroll-to-do-fc37dc092ebb.herokuapp.com/)
 
 ## Overview
 ScrollToDo is a task management tool designed to help users efficiently create, organize, and prioritize their tasks. Unlike traditional task managers, ScrollToDo introduces an intuitive prioritization system that mimics the casual and engaging experience of scrolling through social media. It provides two main prioritization modes: linear ranking and matrix-based sorting, allowing users to prioritize tasks effortlessly from any device, including mobile.
@@ -6,7 +7,7 @@ ScrollToDo is a task management tool designed to help users efficiently create, 
 ## UX Design Process
 
 ### **Link to User Stories in GitHub Projects:**
-- [GitHub Projects Board](#)
+- [GitHub Projects Board](https://github.com/users/sharichungcode/projects/3/)
 
 ### **Wireframes:**
 - [Attach or link to wireframes](#)
