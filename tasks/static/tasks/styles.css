@@ -1,3 +1,97 @@
+/* Primary Colors */
+:root {
+    --primary-blue: #007BFF;
+    --dark-blue: #0056B3;
+    --dark-gray: #212529;
+    --medium-gray: #6C757D;
+    --light-gray: #F8F9FA;
+    --white: #FFFFFF;
+    --success-green: #28A745;
+    --warning-yellow: #FFC107;
+    --danger-red: #DC3545;
+    --low-priority: #5A67D8;
+    --medium-priority: #20C997;
+    --high-priority: #E36209;
+}
+
+/* Body Text */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
+    color: var(--dark-gray);
+    background-color: var(--light-gray);
+}
+
+/* Headings and Buttons */
+h1, h2, h3, h4, h5, h6, .btn {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Numbers and Analytics */
+.numbers, .analytics {
+    font-family: 'Space Mono', monospace;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--white);
+    color: var(--dark-gray);
+}
+
+.navbar .navbar-brand {
+    color: var(--dark-gray);
+}
+
+.navbar .navbar-brand:hover {
+    color: var(--primary-blue);
+}
+
+.navbar .btn-outline-primary {
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.navbar .btn-outline-primary:hover {
+    background-color: var(--primary-blue);
+    color: var(--white);
+}
+
+/* Hero Section */
+header {
+    background-color: var(--primary-blue);
+    color: var(--white);
+}
+
+/* Task List Cards */
+.card {
+    background-color: var(--light-gray);
+    color: var(--dark-gray);
+}
+
+/* Priority Matrix */
+.low-priority {
+    background-color: var(--low-priority);
+    color: var(--white);
+}
+
+.medium-priority {
+    background-color: var(--medium-priority);
+    color: var(--white);
+}
+
+.high-priority {
+    background-color: var(--high-priority);
+    color: var(--white);
+}
+
+/* Status Colors */
+.success {
+    color: var(--success-green);
+}
+
+.warning {
+    color: var(--warning-yellow);
+}
+
+.danger {
+    color: var(--danger-red);
 }
