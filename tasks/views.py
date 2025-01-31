@@ -1,11 +1,10 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
-from django.contrib.auth import logout as auth_logout
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 
 def index(request):
@@ -65,4 +64,3 @@ def ajax_auth_view(request):
             else:
                 return JsonResponse({'success': False, 'error': 'Invalid email or password'})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
-
