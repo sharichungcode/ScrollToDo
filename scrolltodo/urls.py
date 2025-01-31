@@ -25,8 +25,12 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('login/', views.login_view, name='login'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('account/', views.account_view, name='account'),
+    path('logout/', views.logout_view, name='logout'),
     path('ajax-auth/', views.ajax_auth_view, name='ajax_auth'),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )

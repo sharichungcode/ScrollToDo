@@ -5,6 +5,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from django.contrib.auth import logout as auth_logout
+from django.contrib import messages
 
 def index(request):
     return render(request, 'tasks/index.html')
@@ -28,6 +30,22 @@ def login_view(request):
 @login_required
 def dashboard_view(request):
     return render(request, 'tasks/dashboard.html')
+
+@login_required
+def account_view(request):
+    if request.method == 'POST':
+        user = request.user
+        user.username = request.POST.get('username')
+        user.email = request.POST.get('email')
+        user.save()
+        messages.success(request, 'Account details updated successfully.')
+        return redirect('account')
+    return render(request, 'tasks/account.html')
+
+@login_required
+def logout_view(request):
+    auth_logout(request)
+    return redirect('index')
 
 @csrf_exempt
 def ajax_auth_view(request):

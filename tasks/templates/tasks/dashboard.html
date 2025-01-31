@@ -3,15 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>ScrollToDo - Organize, Prioritize, and Conquer</title>
     {% load static %}
     <link href="{% static 'tasks/styles.css' %}" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
 </head>
-<body>
-    <div class="container mt-5">
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <!-- Navigation Bar -->
+     <!-- Include Navigation Bar -->
+     {% include 'tasks/navbar.html' %}
+
+     <div class="container mt-5">
         <h2>Welcome to your Dashboard, {{ user.username }}!</h2>
         <!-- Add your dashboard content here -->
     </div>
+
+    <!-- Footer -->
+    <!-- Include Footer -->
+    {% include 'tasks/footer.html' %}
+
+
 </body>
 </html>

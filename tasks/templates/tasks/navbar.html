@@ -6,7 +6,11 @@
             <span style="font-weight: bold; color: var(--dark-gray);">ScrollToDo</span>
         </a>
         <div class="justify-content-end" id="navbarNav">
-            <a href="#" data-toggle="modal" data-target="#authModal" class="btn btn-outline-primary">Sign In</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'account' %}" class="btn btn-outline-primary">Hi, {{ user.email }} →</a>
+            {% else %}
+                <a href="#" data-toggle="modal" data-target="#authModal" class="btn btn-outline-primary">Sign In</a>
+            {% endif %}
         </div>
     </div>
 </nav>
