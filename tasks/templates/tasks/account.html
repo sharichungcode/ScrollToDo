@@ -18,6 +18,13 @@
             <h2>Account Details</h2>
             <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
         </div>
+        {% if messages %}
+            <div class="alert alert-success">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
         <form method="post" class="needs-validation" novalidate>
             {% csrf_token %}
             <div class="form-row">

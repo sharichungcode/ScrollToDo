@@ -152,5 +152,14 @@ AUTHENTICATION_BACKENDS = (
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'index'
 
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'scrolltodo.team@gmail.com'  # Your Gmail address
+EMAIL_HOST_PASSWORD = 'qdddxqturrjokqmu'  # Your Gmail password or App Password
+DEFAULT_FROM_EMAIL = 'scrolltodo.team@gmail.com'  # Your Gmail address
+
 # Activate Django-Heroku.
 django_heroku.settings(locals())
