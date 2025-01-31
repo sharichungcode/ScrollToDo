@@ -53,12 +53,14 @@ def ajax_auth_view(request):
         password = request.POST.get('password')
         user = authenticate(request, username=email, password=password)
         if user is not None:
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
             return JsonResponse({'success': True, 'redirect_url': '/dashboard/'})
         else:
             # If user does not exist, create a new user
             if not User.objects.filter(email=email).exists():
                 user = User.objects.create_user(username=email, email=email, password=password)
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
                 return JsonResponse({'success': True, 'redirect_url': '/dashboard/'})
             else:
