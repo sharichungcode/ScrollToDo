@@ -95,3 +95,8 @@ header {
 .danger {
     color: var(--danger-red);
 }
+
+/* Use CSS to hide the error messages initially. */
+.errorlist {
+    display: none;
+}

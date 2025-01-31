@@ -9,8 +9,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 import smtplib
 import ssl
+
+from .forms import CustomPasswordChangeForm  # Import the CustomPasswordChangeForm
 
 def index(request):
     return render(request, 'tasks/index.html')
@@ -68,6 +72,21 @@ def send_confirmation_email(user):
         server.starttls(context=context)
         server.login(from_email, 'qdddxqturrjokqmu')
         server.sendmail(from_email, recipient_list, f"Subject: {subject}\n\n{message}")
+
+@login_required
+def change_password_view(request):
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important to keep the user logged in
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('account')
+        else:
+            pass
+    else:
+        form = CustomPasswordChangeForm(request.user)
+    return render(request, 'tasks/change_password.html', {'form': form})
 
 @login_required
 def logout_view(request):

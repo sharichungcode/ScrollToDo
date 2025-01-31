@@ -27,6 +27,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('account/', views.account_view, name='account'),
     path('logout/', views.logout_view, name='logout'),
+    path('change-password/', views.change_password_view, name='change_password'),
     path('ajax-auth/', views.ajax_auth_view, name='ajax_auth'),
 ]
 

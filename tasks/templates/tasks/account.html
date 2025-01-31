@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Details</title>
+    <title>ScrollToDo - Organize, Prioritize, and Conquer</title>
     {% load static %}
     <link href="{% static 'tasks/styles.css' %}" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body class="d-flex flex-column min-vh-100 bg-light">
 
@@ -56,6 +59,13 @@
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
         <a href="{% url 'logout' %}" class="btn btn-danger mt-3">Logout</a>
+
+        <h3 class="mt-5">Change Password</h3>
+        <form method="post" action="{% url 'change_password' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Change Password</button>
+        </form>
     </div>
 
     <!-- Footer -->
