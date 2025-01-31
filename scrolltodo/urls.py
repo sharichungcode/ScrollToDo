@@ -25,7 +25,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('login/', views.login_view, name='login'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
-    path('ajax-login/', views.ajax_login_view, name='ajax_login'),
+    path('ajax-auth/', views.ajax_auth_view, name='ajax_auth'),
 ]
 
 if settings.DEBUG:

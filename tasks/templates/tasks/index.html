@@ -83,8 +83,8 @@
     <!-- Include Footer -->
     {% include 'tasks/footer.html' %}
 
-    <!-- Authentication Modal -->
-    <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+     <!-- Authentication Modal -->
+     <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -95,7 +95,7 @@
                 </div>
                 <div class="modal-body">
                     <p>Let’s make prioritising as fun as scrolling your feed.</p>
-                    <form id="login-form" method="post">
+                    <form id="auth-form" method="post">
                         {% csrf_token %}
                         <div class="form-group">
                             <label for="email">Email</label>
@@ -107,7 +107,7 @@
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">Continue</button>
                     </form>
-                    <div id="login-error" class="alert alert-danger mt-3 d-none"></div>
+                    <div id="auth-error" class="alert alert-danger mt-3 d-none"></div>
                 </div>
             </div>
         </div>
@@ -118,10 +118,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- AJAX Login Script -->
+    <!-- AJAX Auth Script -->
     <script>
         $(document).ready(function() {
-            $('#login-form').on('submit', function(event) {
+            $('#auth-form').on('submit', function(event) {
                 event.preventDefault();
                 var formData = {
                     'email': $('#email').val(),
@@ -130,17 +130,17 @@
                 };
                 $.ajax({
                     type: 'POST',
-                    url: '{% url "ajax_login" %}',
+                    url: '{% url "ajax_auth" %}',
                     data: formData,
                     success: function(response) {
                         if (response.success) {
                             window.location.href = response.redirect_url;
                         } else {
-                            $('#login-error').text(response.error).removeClass('d-none');
+                            $('#auth-error').text(response.error).removeClass('d-none');
                         }
                     },
                     error: function(response) {
-                        $('#login-error').text('An error occurred. Please try again.').removeClass('d-none');
+                        $('#auth-error').text('An error occurred. Please try again.').removeClass('d-none');
                     }
                 });
             });
