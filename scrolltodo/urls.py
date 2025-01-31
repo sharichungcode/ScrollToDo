@@ -23,6 +23,9 @@ from tasks import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
+    path('login/', views.login_view, name='login'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('ajax-login/', views.ajax_login_view, name='ajax_login'),
 ]
 
 if settings.DEBUG:
