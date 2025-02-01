@@ -7,7 +7,9 @@
         </a>
         <div class="justify-content-end" id="navbarNav">
             {% if user.is_authenticated %}
-            <a href="{% url 'account' %}" class="btn btn-outline-primary">Hi, {{ user.email }} →</a>
+            <a href="{% url 'account' %}" class="btn btn-outline-primary d-flex align-items-center">
+                Hi,<div style="max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; margin-left: 5px;">{{ user.username }}</div>&nbsp;→
+            </a>
             {% else %}
                 <a href="#" data-toggle="modal" data-target="#authModal" class="btn btn-outline-primary">Sign In</a>
             {% endif %}
