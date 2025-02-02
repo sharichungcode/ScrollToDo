@@ -85,7 +85,12 @@ WSGI_APPLICATION = 'scrolltodo.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default='postgresql://neondb_owner:npg_4In7eJrqsVCb@ep-cold-tree-a2igf0x8.eu-central-1.aws.neon.tech/robin_uncle_iron_518628')
+    'default': dj_database_url.config(
+        default=(
+            'postgresql://neondb_owner:npg_4In7eJrqsVCb@ep-cold-tree-a2igf0x8.'
+            'eu-central-1.aws.neon.tech/robin_uncle_iron_518628'
+        )
+    )
 }
 
 
