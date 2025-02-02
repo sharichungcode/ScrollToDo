@@ -15,7 +15,7 @@ import smtplib
 import ssl
 
 from .forms import CustomPasswordChangeForm, ItemListForm, ItemForm
-from .models import ItemList, Item
+from .models import ItemList, Item, Profile
 
 def index(request):
     return render(request, 'tasks/index.html')
@@ -40,27 +40,29 @@ def create_default_lists_and_tasks(user):
     if not ItemList.objects.filter(user=user).exists():
         work_list = ItemList.objects.create(name='Work', user=user)
         personal_list = ItemList.objects.create(name='Personal', user=user)
-        grocery_list = ItemList.objects.create(
-            name='Grocery Shopping', user=user
-        )
+        grocery_list = ItemList.objects.create(name='Grocery Shopping', user=user)
 
-        items_to_create = [
-            {'title': 'Finish project report', 'item_list': work_list},
-            {'title': 'Prepare presentation', 'item_list': work_list},
-            {'title': 'Call mom', 'item_list': personal_list},
-            {'title': 'Buy milk', 'item_list': grocery_list},
-            {'title': 'Buy bread', 'item_list': grocery_list},
-        ]
-
-        for item in items_to_create:
-            Item.objects.create(**item)
+        Item.objects.create(title='Finish project report', item_list=work_list)
+        Item.objects.create(title='Prepare presentation', item_list=work_list)
+        Item.objects.create(title='Call mom', item_list=personal_list)
+        Item.objects.create(title='Buy milk', item_list=grocery_list)
+        Item.objects.create(title='Buy bread', item_list=grocery_list)
 
 @login_required
 def dashboard_view(request):
-    create_default_lists_and_tasks(request.user)
+    # Ensure the user has a profile
+    if not hasattr(request.user, 'profile'):
+        Profile.objects.create(user=request.user)
+    
+    # Check if the user is new and create default lists and tasks only for new accounts
+    if not request.user.profile.default_lists_created:
+        create_default_lists_and_tasks(request.user)
+        request.user.profile.default_lists_created = True
+        request.user.profile.save()
+    
     items = Item.objects.filter(item_list__user=request.user)
     item_lists_exist = ItemList.objects.filter(user=request.user).exists()
-    empty_state = not item_lists_exist
+    empty_state = not item_lists_exist and not items.exists()
     return render(request, 'tasks/dashboard.html', {'items': items, 'empty_state': empty_state})
 
 @login_required
