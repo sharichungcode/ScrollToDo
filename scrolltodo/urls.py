@@ -29,9 +29,9 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('change-password/', views.change_password_view, name='change_password'),
     path('ajax-auth/', views.ajax_auth_view, name='ajax_auth'),
+    path('create_item_list/', views.create_item_list_view, name='create_item_list'),
+    path('create_item/', views.create_item_view, name='create_item'),  # Ensure this line is present
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
-    )
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

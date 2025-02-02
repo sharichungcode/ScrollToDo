@@ -16,6 +16,9 @@ import ssl
 
 from .forms import CustomPasswordChangeForm  # Import the CustomPasswordChangeForm
 
+from .forms import ItemListForm, ItemForm
+from .models import ItemList, Item
+
 def index(request):
     return render(request, 'tasks/index.html')
 
@@ -80,10 +83,10 @@ def change_password_view(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)  # Important to keep the user logged in
-            messages.success(request, 'Your password was successfully updated!')
+            messages.success(request, 'Your password has been updated successfully.')
             return redirect('account')
         else:
-            pass
+            messages.error(request, 'Failed to update password. Please try again.')
     else:
         form = CustomPasswordChangeForm(request.user)
     return render(request, 'tasks/change_password.html', {'form': form})
@@ -113,3 +116,25 @@ def ajax_auth_view(request):
             else:
                 return JsonResponse({'success': False, 'error': 'Invalid email or password'})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+def create_item_list_view(request):
+    if request.method == 'POST':
+        item_list_form = ItemListForm(request.POST)
+        item_form = ItemForm(request.POST)
+        if item_list_form.is_valid() and item_form.is_valid():
+            item_list = item_list_form.save(commit=False)
+            item_list.user = request.user
+            item_list.save()
+            item = item_form.save(commit=False)
+            item.item_list = item_list
+            item.save()
+            return redirect('dashboard')
+    else:
+        item_list_form = ItemListForm()
+        item_form = ItemForm()
+    return render(request, 'tasks/create_item_list.html', {'item_list_form': item_list_form, 'item_form': item_form})
+
+def create_item_view(request):
+    # Your view logic here
+    return render(request, 'tasks/create_item.html')
