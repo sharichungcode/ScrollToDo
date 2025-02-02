@@ -20,7 +20,7 @@ class Item(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     deadline = models.DateTimeField(blank=True, null=True)
-    item_list = models.CharField(max_length=255, default='default_value')  # Replace 'default_value' with your desired default
+    item_list = models.ForeignKey(ItemList, on_delete=models.CASCADE)
     completed = models.BooleanField(default=False)
 
     def __str__(self):

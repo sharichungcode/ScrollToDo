@@ -17,7 +17,7 @@ import ssl
 from .forms import CustomPasswordChangeForm  # Import the CustomPasswordChangeForm
 
 from .forms import ItemListForm, ItemForm
-from .models import ItemList, Item
+from .models import ItemList, Item  # Remove Task if it no longer exists
 
 def index(request):
     return render(request, 'tasks/index.html')
@@ -40,7 +40,10 @@ def login_view(request):
 
 @login_required
 def dashboard_view(request):
-    return render(request, 'tasks/dashboard.html')
+    items = Item.objects.filter(item_list__user=request.user)
+    item_lists_exist = ItemList.objects.filter(user=request.user).exists()
+    empty_state = not item_lists_exist
+    return render(request, 'tasks/dashboard.html', {'items': items, 'empty_state': empty_state})
 
 @login_required
 def account_view(request):
@@ -138,3 +141,7 @@ def create_item_list_view(request):
 def create_item_view(request):
     # Your view logic here
     return render(request, 'tasks/create_item.html')
+
+def item_classification_view(request):
+    # Your view logic here
+    return render(request, 'tasks/item_classification.html')
