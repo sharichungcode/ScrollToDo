@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScrollToDo - Organize, Prioritize, and Conquer</title>
+    <title>Create Item</title>
     {% load static %}
     <link href="{% static 'tasks/styles.css' %}" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -24,19 +24,19 @@
         <form method="post" class="needs-validation" novalidate>
             {% csrf_token %}
             <div class="form-group">
-                <label for="item_name">Item Name</label>
-                <input type="text" class="form-control" id="item_name" name="item_name" required minlength="3">
+                <label for="title">Item Title</label>
+                <input type="text" class="form-control" id="title" name="title" required>
                 <div class="invalid-feedback">
-                    Item name is required and must be at least 3 characters long.
+                    Please provide an item title.
                 </div>
             </div>
             <div class="form-group">
-                <label for="item_description">Item Description (Optional)</label>
-                <textarea class="form-control" id="item_description" name="item_description"></textarea>
+                <label for="description">Item Description</label>
+                <textarea class="form-control" id="description" name="description"></textarea>
             </div>
             <div class="form-group">
-                <label for="item_deadline">Item Deadline (Optional)</label>
-                <input type="datetime-local" class="form-control" id="item_deadline" name="item_deadline">
+                <label for="deadline">Deadline</label>
+                <input type="datetime-local" class="form-control" id="deadline" name="deadline">
             </div>
             <div class="form-group">
                 <label for="item_list">Assign to List</label>
@@ -67,8 +67,8 @@
 
     <!-- Bootstrap JavaScript and dependencies -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <!-- Form validation and dynamic behavior script -->
     <script>
@@ -95,18 +95,6 @@
                     }
                     form.classList.add('was-validated');
                 }, false);
-            });
-
-            // Preserve user progress when adding a new list
-            document.getElementById('new_list_name').addEventListener('input', function() {
-                var itemListDropdown = document.getElementById('item_list');
-                if (this.value.length >= 3) {
-                    var newOption = document.createElement('option');
-                    newOption.value = this.value;
-                    newOption.text = this.value;
-                    itemListDropdown.add(newOption);
-                    itemListDropdown.value = this.value;
-                }
             });
         })();
     </script>

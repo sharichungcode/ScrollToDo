@@ -143,20 +143,18 @@ def ajax_auth_view(request):
 @login_required
 def create_item_list_view(request):
     if request.method == 'POST':
-        item_list_form = ItemListForm(request.POST)
-        item_form = ItemForm(request.POST)
-        if item_list_form.is_valid() and item_form.is_valid():
-            item_list = item_list_form.save(commit=False)
+        form = ItemListForm(request.POST)
+        if form.is_valid():
+            item_list = form.save(commit=False)
             item_list.user = request.user
             item_list.save()
-            item = item_form.save(commit=False)
-            item.item_list = item_list
-            item.save()
+            messages.success(request, 'Item list created successfully.')
             return redirect('dashboard')
+        else:
+            messages.error(request, 'Failed to create item list. Please correct the errors below.')
     else:
-        item_list_form = ItemListForm()
-        item_form = ItemForm()
-    return render(request, 'tasks/create_item_list.html', {'item_list_form': item_list_form, 'item_form': item_form})
+        form = ItemListForm()
+    return render(request, 'tasks/create_item_list.html', {'form': form})
 
 @login_required
 def create_item_view(request):
@@ -164,12 +162,24 @@ def create_item_view(request):
         form = ItemForm(request.POST)
         if form.is_valid():
             item = form.save(commit=False)
-            item_list_id = form.cleaned_data['item_list']
-            item_list = ItemList.objects.get(id=item_list_id, user=request.user)
+            item_list = form.cleaned_data['item_list']
+            new_list_name = form.cleaned_data['new_list_name']
+
+            if new_list_name:
+                item_list = ItemList.objects.create(name=new_list_name, user=request.user)
+            elif item_list:
+                item_list = get_object_or_404(ItemList, id=item_list.id, user=request.user)
+
             item.item_list = item_list
             item.save()
-            messages.success(request, 'Item successfully added.')
+            messages.success(request, 'Item created successfully.')
             return redirect('dashboard')
+        else:
+            # Log form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    print(f"Error in {field}: {error}")
+            messages.error(request, 'Failed to create item. Please correct the errors below.')
     else:
         form = ItemForm()
     return render(request, 'tasks/create_item.html', {'form': form})
