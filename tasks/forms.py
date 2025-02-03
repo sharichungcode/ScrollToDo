@@ -18,8 +18,7 @@ class ItemListForm(forms.ModelForm):
         }
 
 class ItemForm(forms.ModelForm):
-    item_list = forms.ModelChoiceField(queryset=ItemList.objects.all(), required=False)
-    new_list_name = forms.CharField(required=False, min_length=3)
+    new_list_name = forms.CharField(required=False, max_length=100, label='New List Name')
 
     class Meta:
         model = Item
@@ -34,6 +33,8 @@ class ItemForm(forms.ModelForm):
         new_list_name = cleaned_data.get('new_list_name')
 
         if not item_list and not new_list_name:
-            raise forms.ValidationError("Please select an existing list or provide a new list name.")
+            raise forms.ValidationError(
+                "Please select an existing list or provide a new list name."
+            )
 
         return cleaned_data

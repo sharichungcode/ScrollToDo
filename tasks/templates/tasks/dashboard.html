@@ -28,13 +28,7 @@
         </div>
 
         <!-- Display Success and Error Messages -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+        <div id="messages"></div>
 
         <!-- Display Item Lists -->
         {% if not empty_state %}
@@ -49,7 +43,7 @@
                                         <h5 class="fw-bold">{{ item_list.name }}</h5>
                                         <small class="text-muted">{{ item_list.item_set.count }} items remaining</small>
                                         <div class="progress mt-2" style="height: 8px;">
-                                            <div class="progress-bar bg-success" style="width: {{ item_list.progress }}%;"></div>
+                                            <div class="progress-bar bg-success" style="width: {{ item_list.progress|default:'0' }}%;"></div>
                                         </div>
                                     </div>
                                     <i class="fas fa-chevron-right fs-4 text-muted"></i>
@@ -82,22 +76,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" action="{% url 'create_item' %}" class="needs-validation" novalidate>
+                    <form id="addTaskForm" method="post" action="{% url 'create_item' %}" class="needs-validation" novalidate>
                         {% csrf_token %}
                         <div class="form-group">
-                            <label for="item_name">Item Name</label>
-                            <input type="text" class="form-control" id="item_name" name="item_name" required minlength="3">
+                            <label for="title">Item Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
                             <div class="invalid-feedback">
-                                Item name is required and must be at least 3 characters long.
+                                Please provide an item title.
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="item_description">Item Description (Optional)</label>
-                            <textarea class="form-control" id="item_description" name="item_description"></textarea>
+                            <label for="description">Item Description</label>
+                            <textarea class="form-control" id="description" name="description"></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="item_deadline">Item Deadline (Optional)</label>
-                            <input type="datetime-local" class="form-control" id="item_deadline" name="item_deadline">
+                            <label for="deadline">Deadline</label>
+                            <input type="datetime-local" class="form-control" id="deadline" name="deadline">
                         </div>
                         <div class="form-group">
                             <label for="item_list">Assign to List</label>
@@ -173,8 +167,10 @@
                 var newListGroup = document.getElementById('new_list_group');
                 if (this.value === 'new') {
                     newListGroup.style.display = 'block';
+                    document.getElementById('new_list_name').setAttribute('required', 'required');
                 } else {
                     newListGroup.style.display = 'none';
+                    document.getElementById('new_list_name').removeAttribute('required');
                 }
             });
 
@@ -188,6 +184,41 @@
                     }
                     form.classList.add('was-validated');
                 }, false);
+            });
+
+            // AJAX form submission
+            $('#addTaskForm').on('submit', function(event) {
+                event.preventDefault();
+                var form = $(this);
+                if (form[0].checkValidity() === false) {
+                    event.stopPropagation();
+                    form.addClass('was-validated');
+                    return;
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    success: function(response) {
+                        $('#messages').html('<div class="alert alert-success">Item created successfully.</div>');
+                        form[0].reset();
+                        form.removeClass('was-validated');
+                        $('#new_list_group').hide();
+                        $('#addTaskModal').modal('hide');
+                    },
+                    error: function(response) {
+                        var errors = response.responseJSON ? response.responseJSON.errors : {'error': 'An unexpected error occurred.'};
+                        var errorHtml = '<div class="alert alert-danger"><ul>';
+                        for (var field in errors) {
+                            if (errors.hasOwnProperty(field)) {
+                                errorHtml += '<li>' + errors[field] + '</li>';
+                            }
+                        }
+                        errorHtml += '</ul></div>';
+                        $('#messages').html(errorHtml);
+                    }
+                });
             });
         })();
     </script>

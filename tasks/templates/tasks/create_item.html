@@ -67,36 +67,37 @@
 
     <!-- Bootstrap JavaScript and dependencies -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
 
-    <!-- Form validation and dynamic behavior script -->
+    <!-- Form validation script -->
     <script>
         (function() {
             'use strict';
-
-            // Show/hide new list input based on dropdown selection
-            document.getElementById('item_list').addEventListener('change', function() {
-                var newListGroup = document.getElementById('new_list_group');
-                if (this.value === 'new') {
-                    newListGroup.style.display = 'block';
-                } else {
-                    newListGroup.style.display = 'none';
-                }
-            });
-
-            // Real-time validation
-            var forms = document.getElementsByClassName('needs-validation');
-            Array.prototype.filter.call(forms, function(form) {
-                form.addEventListener('submit', function(event) {
-                    if (form.checkValidity() === false) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
         })();
+
+        // Show/hide new list name field based on selection
+        $('#item_list').change(function() {
+            if ($(this).val() === 'new') {
+                $('#new_list_group').show();
+                $('#new_list_name').attr('required', true);
+            } else {
+                $('#new_list_group').hide();
+                $('#new_list_name').attr('required', false);
+            }
+        });
     </script>
 </body>
 </html>

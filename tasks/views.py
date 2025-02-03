@@ -1,19 +1,18 @@
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 import smtplib
 import ssl
-
 from .forms import CustomPasswordChangeForm, ItemListForm, ItemForm
 from .models import ItemList, Item, Profile
 
@@ -148,10 +147,13 @@ def create_item_list_view(request):
             item_list = form.save(commit=False)
             item_list.user = request.user
             item_list.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': 'Item list created successfully.'})
             messages.success(request, 'Item list created successfully.')
             return redirect('dashboard')
         else:
-            messages.error(request, 'Failed to create item list. Please correct the errors below.')
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:
         form = ItemListForm()
     return render(request, 'tasks/create_item_list.html', {'form': form})
@@ -162,24 +164,25 @@ def create_item_view(request):
         form = ItemForm(request.POST)
         if form.is_valid():
             item = form.save(commit=False)
-            item_list = form.cleaned_data['item_list']
-            new_list_name = form.cleaned_data['new_list_name']
+            item_list = form.cleaned_data.get('item_list')
+            new_list_name = form.cleaned_data.get('new_list_name')
 
             if new_list_name:
                 item_list = ItemList.objects.create(name=new_list_name, user=request.user)
-            elif item_list:
-                item_list = get_object_or_404(ItemList, id=item_list.id, user=request.user)
 
             item.item_list = item_list
             item.save()
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': 'Item created successfully.'})
             messages.success(request, 'Item created successfully.')
             return redirect('dashboard')
         else:
-            # Log form errors
-            for field, errors in form.errors.items():
-                for error in errors:
-                    print(f"Error in {field}: {error}")
-            messages.error(request, 'Failed to create item. Please correct the errors below.')
+            print(form.errors)  # Debugging: Print form errors to the console
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+            else:
+                messages.error(request, 'Form is not valid. Please correct the errors below.')
     else:
         form = ItemForm()
     return render(request, 'tasks/create_item.html', {'form': form})
