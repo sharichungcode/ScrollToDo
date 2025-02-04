@@ -161,15 +161,16 @@ def create_item_list_view(request):
 @login_required
 def create_item_view(request):
     if request.method == 'POST':
-        form = ItemForm(request.POST)
+        form = ItemForm(request.POST, request=request)
+        form.fields['item_list'].queryset = ItemList.objects.filter(user=request.user)
         if form.is_valid():
             item = form.save(commit=False)
+            item.user = request.user
             item_list = form.cleaned_data.get('item_list')
             new_list_name = form.cleaned_data.get('new_list_name')
 
             if new_list_name:
                 item_list = ItemList.objects.create(name=new_list_name, user=request.user)
-
             item.item_list = item_list
             item.save()
 
@@ -178,13 +179,12 @@ def create_item_view(request):
             messages.success(request, 'Item created successfully.')
             return redirect('dashboard')
         else:
-            print(form.errors)  # Debugging: Print form errors to the console
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'errors': form.errors}, status=400)
-            else:
-                messages.error(request, 'Form is not valid. Please correct the errors below.')
+            messages.error(request, 'Form is not valid. Please correct the errors below.')
     else:
-        form = ItemForm()
+        form = ItemForm(request=request)
+        form.fields['item_list'].queryset = ItemList.objects.filter(user=request.user)
     return render(request, 'tasks/create_item.html', {'form': form})
 
 def item_classification_view(request):

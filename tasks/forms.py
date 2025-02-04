@@ -27,6 +27,10 @@ class ItemForm(forms.ModelForm):
             'deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         cleaned_data = super().clean()
         item_list = cleaned_data.get('item_list')
@@ -36,5 +40,9 @@ class ItemForm(forms.ModelForm):
             raise forms.ValidationError(
                 "Please select an existing list or provide a new list name."
             )
+
+        if new_list_name:
+            item_list = ItemList.objects.create(name=new_list_name, user=self.request.user)
+            cleaned_data['item_list'] = item_list
 
         return cleaned_data

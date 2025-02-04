@@ -162,19 +162,20 @@
     <script>
         (function() {
             'use strict';
-
+    
             // Show/hide new list input based on dropdown selection
             document.getElementById('item_list').addEventListener('change', function() {
                 var newListGroup = document.getElementById('new_list_group');
+                var newListNameInput = document.getElementById('new_list_name');
                 if (this.value === 'new') {
                     newListGroup.style.display = 'block';
-                    document.getElementById('new_list_name').setAttribute('required', 'required');
+                    newListNameInput.setAttribute('required', 'required');
                 } else {
                     newListGroup.style.display = 'none';
-                    document.getElementById('new_list_name').removeAttribute('required');
+                    newListNameInput.removeAttribute('required');
                 }
             });
-
+    
             // Real-time validation
             var forms = document.getElementsByClassName('needs-validation');
             Array.prototype.filter.call(forms, function(form) {
@@ -186,8 +187,8 @@
                     form.classList.add('was-validated');
                 }, false);
             });
-
-            // AJAX form submission
+    
+            // AJAX form submission for creating a new item
             $('#addTaskForm').on('submit', function(event) {
                 event.preventDefault();
                 var form = $(this);
@@ -196,13 +197,19 @@
                     form.addClass('was-validated');
                     return;
                 }
-
+    
+                var formData = form.serializeArray();
+                var newListName = $('#new_list_name').val();
+                if ($('#item_list').val() === 'new' && newListName) {
+                    formData.push({ name: 'new_list_name', value: newListName });
+                }
+    
                 $.ajax({
                     type: 'POST',
                     url: form.attr('action'),
-                    data: form.serialize(),
+                    data: $.param(formData),
                     success: function(response) {
-                        $('#messages').html('<div class="alert alert-success">Item created successfully.</div>');
+                        $('#form-messages').html('<div class="alert alert-success">Item created successfully.</div>');
                         form[0].reset();
                         form.removeClass('was-validated');
                         $('#new_list_group').hide();
@@ -217,7 +224,7 @@
                             }
                         }
                         errorHtml += '</ul></div>';
-                        $('#messages').html(errorHtml);
+                        $('#form-messages').html(errorHtml);
                     }
                 });
             });

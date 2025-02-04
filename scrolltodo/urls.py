@@ -30,7 +30,7 @@ urlpatterns = [
     path('change-password/', views.change_password_view, name='change_password'),
     path('ajax-auth/', views.ajax_auth_view, name='ajax_auth'),
     path('create_item_list/', views.create_item_list_view, name='create_item_list'),
-    path('create_item/', views.create_item_view, name='create_item'),
+    path('create-item/', views.create_item_view, name='create_item'),
     path('item_classification/', views.item_classification_view, name='item_classification'),
     path('item_list/<int:list_id>/', views.item_list_detail_view, name='item_list_detail'),
 ]
