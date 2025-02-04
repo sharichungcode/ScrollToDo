@@ -17,15 +17,16 @@
     {% include 'tasks/navbar.html' %}
 
     <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="fw-bold">Dashboard</h2>
-            <div>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold mb-3 mb-md-0">Dashboard</h2>
+            <div class="d-flex flex-column flex-md-row">
                 {% if items or request.user.itemlist_set.exists %}
-                <button class="btn btn-primary me-2" data-toggle="modal" data-target="#addTaskModal"><i class="fas fa-plus"></i> Add Item</button>
+                <button class="btn btn-primary mb-2 mb-md-0 mx-md-2" data-toggle="modal" data-target="#addTaskModal"><i class="fas fa-plus"></i> Add Item</button>
                 <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#addTaskListModal"><i class="fas fa-folder-plus"></i> Add Item List</button>
                 {% endif %}
             </div>
         </div>
+        
 
         <!-- Display Success and Error Messages -->
         <div id="messages"></div>
@@ -58,7 +59,7 @@
         <!-- Empty State for No Items or Item Lists -->
         {% if empty_state %}
             <div class="text-center mt-5">
-                <img src="{% static 'tasks/empty_state.svg' %}" alt="No Items" class="img-fluid mb-3" style="max-width: 200px;">
+                <img src="{% get_media_prefix %}item_none.png" alt="No Items" class="img-fluid mb-3" style="max-width: 200px;">
                 <h4 class="fw-bold">No Items or Item Lists Found</h4>
                 <p class="text-muted">You haven't created any items or item lists yet. Start by creating a new item or item list.</p>
                 <a href="{% url 'create_item' %}" class="btn btn-primary btn-lg mt-3">Create New Item</a>
@@ -73,7 +74,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addTaskModalLabel">Add New Item</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <form id="addTaskForm" method="post" action="{% url 'create_item' %}" class="needs-validation" novalidate>
@@ -126,7 +127,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addTaskListModalLabel">Add New Item List</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
                     <form method="post" action="{% url 'create_item_list' %}" class="needs-validation" novalidate>
