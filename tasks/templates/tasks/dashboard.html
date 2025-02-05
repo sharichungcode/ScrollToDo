@@ -28,18 +28,21 @@
             </div>
         </div>
 
-        <!-- Bulk Action Toolbar -->
-        <div id="bulkActionToolbar" class="d-none mb-3">
-            <button class="btn btn-danger mb-2 mb-md-0 mx-md-2" id="deleteSelectedListsBtn" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal" disabled><i class="fas fa-trash-alt"></i> Delete Selected Lists</button>
-        </div>
-
         <!-- Display Success and Error Messages -->
         <div id="messages"></div>
 
         <!-- Display Item Lists -->
         {% if not empty_state %}
         <section class="my-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
             <h3 class="fw-bold">Your Item Lists</h3>
+            <!-- Bulk Action Toolbar -->
+            <div id="bulkActionToolbar" class="d-none d-flex justify-content-end flex-wrap">
+                <button class="btn btn-danger mb-md-0 mx-md-2 d-none" id="deleteSelectedListsBtn" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal" disabled>
+                    <i class="fas fa-trash-alt"></i> Delete Selected Lists
+                </button>
+            </div>
+        </div>
             <div class="row g-3">
                 {% for item_list in request.user.itemlist_set.all %}
                 <div class="my-2 col-md-6">
@@ -262,6 +265,7 @@ document.querySelectorAll('.form-check-input').forEach(function(checkbox) {
         var selectedLists = document.querySelectorAll('.form-check-input:checked');
         document.getElementById('confirmDeleteBtn').disabled = selectedLists.length === 0;
         document.getElementById('deleteSelectedListsBtn').disabled = selectedLists.length === 0;
+        document.getElementById('deleteSelectedListsBtn').classList.toggle('d-none', selectedLists.length === 0);
         document.getElementById('bulkActionToolbar').classList.toggle('d-none', selectedLists.length === 0);
     });
 });
