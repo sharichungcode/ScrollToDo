@@ -12,7 +12,7 @@ class ItemList(models.Model):
         return self.name
 
 class Item(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, default='default_title')  # Replace 'default_title' with your desired default
     description = models.TextField(blank=True, null=True)
     deadline = models.DateTimeField(blank=True, null=True)
     item_list = models.ForeignKey(ItemList, on_delete=models.CASCADE)

@@ -16,6 +16,11 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from .forms import CustomPasswordChangeForm, ItemListForm, ItemForm
 from .models import ItemList, Item, Profile
+import logging
+from django.core.exceptions import ValidationError
+from django.utils.dateparse import parse_datetime
+
+logger = logging.getLogger(__name__)
 
 def index(request):
     return render(request, 'tasks/index.html')
@@ -143,21 +148,32 @@ def ajax_auth_view(request):
 @login_required
 def create_item_list_view(request):
     if request.method == 'POST':
-        form = ItemListForm(request.POST)
-        if form.is_valid():
-            item_list = form.save(commit=False)
-            item_list.user = request.user
-            item_list.save()
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': True, 'message': 'Item list created successfully.'})
-            messages.success(request, 'Item list created successfully.')
-            return redirect('dashboard')
+        try:
+            data = json.loads(request.body)
+            name = data.get('name')
+            deadline = data.get('deadline')
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data.'})
+
+        if not name:
+            return JsonResponse({'success': False, 'error': 'List name is required'})
+
+        if deadline:
+            try:
+                deadline = parse_datetime(deadline)
+                if deadline is None:
+                    raise ValidationError("Invalid date format")
+            except ValidationError:
+                return JsonResponse({'success': False, 'error': 'Invalid date format'})
         else:
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
-    else:
-        form = ItemListForm()
-    return render(request, 'tasks/create_item_list.html', {'form': form})
+            deadline = None
+
+        item_list = ItemList(name=name, deadline=deadline, user=request.user)
+        item_list.save()
+
+        return JsonResponse({'success': True})
+
+    return render(request, 'tasks/create_item_list.html')
 
 @login_required
 def create_item_view(request):
@@ -252,3 +268,23 @@ def item_list_detail_view(request, list_id):
         'completion_percentage': completion_percentage,
         'form': form
     })
+
+@login_required
+def delete_selected_lists_view(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            selected_lists = data.get('selected_lists', [])
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data.'})
+
+        if not selected_lists:
+            return JsonResponse({'success': False, 'error': 'No lists selected.'})
+
+        for list_id in selected_lists:
+            item_list = get_object_or_404(ItemList, id=list_id, user=request.user)
+            item_list.delete()
+
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
