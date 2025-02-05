@@ -198,37 +198,81 @@
                     return;
                 }
     
-                var formData = form.serializeArray();
+                var itemList = $('#item_list').val();
                 var newListName = $('#new_list_name').val();
-                if ($('#item_list').val() === 'new' && newListName) {
-                    formData.push({ name: 'new_list_name', value: newListName });
+    
+                if (itemList === 'new' && newListName) {
+                    // Create new list first
+                    createNewList(newListName);
+                } else {
+                    // Submit the item creation form directly
+                    submitItemForm(itemList);
                 }
+            });
+    
+            function createNewList(newListName) {
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "create_item_list" %}',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    data: JSON.stringify({ name: newListName }),
+                    success: function(response) {
+                        if (response.success) {
+                            let newListId = response.list_id;
+                            $('#item_list').append(new Option(newListName, newListId, true, true));
+                            submitItemForm(newListId);
+                        } else {
+                            showErrorMessages(response.errors);
+                        }
+                    },
+                    error: function() {
+                        showErrorMessages({ error: 'An unexpected error occurred while creating the new list.' });
+                    }
+                });
+            }
+    
+            function submitItemForm(itemListId) {
+                var form = $('#addTaskForm');
+                var formData = form.serializeArray();
+                formData.push({ name: 'item_list', value: itemListId });
     
                 $.ajax({
                     type: 'POST',
                     url: form.attr('action'),
                     data: $.param(formData),
                     success: function(response) {
-                        $('#form-messages').html('<div class="alert alert-success">Item created successfully.</div>');
-                        form[0].reset();
-                        form.removeClass('was-validated');
-                        $('#new_list_group').hide();
-                        $('#addTaskModal').modal('hide');
+                        if (response.success) {
+                            $('#form-messages').html('<div class="alert alert-success">Item created successfully.</div>');
+                            form[0].reset();
+                            form.removeClass('was-validated');
+                            $('#new_list_group').hide();
+                            $('#addTaskModal').modal('hide');
+                        } else {
+                            showErrorMessages(response.errors);
+                        }
                     },
                     error: function(response) {
-                        var errors = response.responseJSON ? response.responseJSON.errors : {'error': 'An unexpected error occurred.'};
-                        var errorHtml = '<div class="alert alert-danger"><ul>';
-                        for (var field in errors) {
-                            if (errors.hasOwnProperty(field)) {
-                                errorHtml += '<li>' + errors[field] + '</li>';
-                            }
-                        }
-                        errorHtml += '</ul></div>';
-                        $('#form-messages').html(errorHtml);
+                        showErrorMessages({ error: 'An unexpected error occurred while creating the item.' });
                     }
                 });
-            });
+            }
+    
+            function showErrorMessages(errors) {
+                var errorHtml = '<div class="alert alert-danger"><ul>';
+                for (var field in errors) {
+                    if (errors.hasOwnProperty(field)) {
+                        errorHtml += '<li>' + errors[field] + '</li>';
+                    }
+                }
+                errorHtml += '</ul></div>';
+                $('#form-messages').html(errorHtml);
+            }
         })();
     </script>
+        
+        
 </body>
 </html>

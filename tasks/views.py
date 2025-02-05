@@ -1,4 +1,7 @@
 import requests
+import json
+import smtplib
+import ssl
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -11,8 +14,6 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-import smtplib
-import ssl
 from .forms import CustomPasswordChangeForm, ItemListForm, ItemForm
 from .models import ItemList, Item, Profile
 
@@ -163,33 +164,54 @@ def create_item_view(request):
     if request.method == 'POST':
         form = ItemForm(request.POST, request=request)
         form.fields['item_list'].queryset = ItemList.objects.filter(user=request.user)
+
         if form.is_valid():
             item = form.save(commit=False)
             item.user = request.user
             item_list = form.cleaned_data.get('item_list')
             new_list_name = form.cleaned_data.get('new_list_name')
 
-            if new_list_name:
-                item_list = ItemList.objects.create(name=new_list_name, user=request.user)
-            item.item_list = item_list
-            item.save()
+            # FIX: Use existing list if available
+            if item_list:
+                item.item_list = item_list
+            elif new_list_name:
+                item_list, created = ItemList.objects.get_or_create(name=new_list_name, user=request.user)
+                item.item_list = item_list
 
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': True, 'message': 'Item created successfully.'})
-            messages.success(request, 'Item created successfully.')
-            return redirect('dashboard')
-        else:
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
-            messages.error(request, 'Form is not valid. Please correct the errors below.')
-    else:
-        form = ItemForm(request=request)
-        form.fields['item_list'].queryset = ItemList.objects.filter(user=request.user)
-    return render(request, 'tasks/create_item.html', {'form': form})
+            item.save()
+            return JsonResponse({'success': True, 'message': 'Item created successfully.'})
+        
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
 
 def item_classification_view(request):
     # Your view logic here
     return render(request, 'tasks/item_classification.html')
+
+@csrf_exempt  # Only if CSRF protection is disabled; otherwise, remove this line
+@login_required
+def create_item_list(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            new_list_name = data.get("name", "").strip()
+
+            if len(new_list_name) < 3:
+                return JsonResponse({"success": False, "error": "List name must be at least 3 characters."}, status=400)
+
+            # Prevent duplicate lists
+            existing_list = ItemList.objects.filter(name=new_list_name, user=request.user).first()
+            if existing_list:
+                return JsonResponse({"success": True, "list_id": existing_list.id}, status=200)
+
+            new_list = ItemList.objects.create(name=new_list_name, user=request.user)
+
+            return JsonResponse({"success": True, "list_id": new_list.id}, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "error": "Invalid JSON format."}, status=400)
+    return JsonResponse({"success": False, "error": "Invalid request method."}, status=405)
+
 
 @login_required
 def item_list_detail_view(request, list_id):
