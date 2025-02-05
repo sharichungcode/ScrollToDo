@@ -190,25 +190,46 @@
     
             // AJAX form submission for creating a new item
             $('#addTaskForm').on('submit', function(event) {
-                event.preventDefault();
-                var form = $(this);
-                if (form[0].checkValidity() === false) {
-                    event.stopPropagation();
-                    form.addClass('was-validated');
-                    return;
-                }
-    
-                var itemList = $('#item_list').val();
-                var newListName = $('#new_list_name').val();
-    
-                if (itemList === 'new' && newListName) {
-                    // Create new list first
-                    createNewList(newListName);
+    event.preventDefault();
+    var form = $(this);
+    if (form[0].checkValidity() === false) {
+        event.stopPropagation();
+        form.addClass('was-validated');
+        return;
+    }
+
+    var itemList = $('#item_list').val();
+    var newListName = $('#new_list_name').val();
+
+    if (itemList === 'new' && newListName) {
+        // Prevent duplicate list creation by checking if it already exists
+        $.ajax({
+            type: 'POST',
+            url: '{% url "create_item_list" %}',
+            data: JSON.stringify({
+                'name': newListName,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            }),
+            contentType: 'application/json',
+            success: function(response) {
+                if (response.success) {
+                    // Set the existing list ID instead of creating another one
+                    $('#item_list').append(new Option(newListName, response.list_id, true, true));
+                    submitItemForm(response.list_id);
                 } else {
-                    // Submit the item creation form directly
-                    submitItemForm(itemList);
+                    showErrorMessages(response.errors);
                 }
-            });
+            },
+            error: function(response) {
+                showErrorMessages({'error': 'An unexpected error occurred while creating the new list.'});
+            }
+        });
+    } else {
+        // Directly submit the item form with the selected list
+        submitItemForm(itemList);
+    }
+});
+
     
             function createNewList(newListName) {
                 $.ajax({

@@ -171,25 +171,38 @@ def create_item_view(request):
             item_list = form.cleaned_data.get('item_list')
             new_list_name = form.cleaned_data.get('new_list_name')
 
-            # FIX: Use existing list if available
-            if item_list:
-                item.item_list = item_list
-            elif new_list_name:
+            # Check if a new list is already created by AJAX request
+            if new_list_name and item_list is None:
+                # Prevent duplicate list creation
                 item_list, created = ItemList.objects.get_or_create(name=new_list_name, user=request.user)
-                item.item_list = item_list
 
+            item.item_list = item_list
             item.save()
-            return JsonResponse({'success': True, 'message': 'Item created successfully.'})
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': 'Item created successfully.'})
+
+            messages.success(request, 'Item created successfully.')
+            return redirect('dashboard')
         
-        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+            messages.error(request, 'Form is not valid. Please correct the errors below.')
+
+    else:
+        form = ItemForm(request=request)
+        form.fields['item_list'].queryset = ItemList.objects.filter(user=request.user)
+
+    return render(request, 'tasks/create_item.html', {'form': form})
+
 
 
 def item_classification_view(request):
     # Your view logic here
     return render(request, 'tasks/item_classification.html')
 
-@csrf_exempt  # Only if CSRF protection is disabled; otherwise, remove this line
-@login_required
+@csrf_exempt  # Remove this if CSRF middleware is enabled
 def create_item_list(request):
     if request.method == "POST":
         try:
