@@ -153,10 +153,14 @@ def create_item_list_view(request):
             name = data.get('name')
             deadline = data.get('deadline')
         except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'error': 'Invalid JSON data.'})
+            return JsonResponse(
+                {'success': False, 'error': 'Invalid JSON data.'}
+            )
 
         if not name:
-            return JsonResponse({'success': False, 'error': 'List name is required'})
+            return JsonResponse(
+                {'success': False, 'error': 'List name is required'}
+            )
 
         if deadline:
             try:
@@ -164,7 +168,9 @@ def create_item_list_view(request):
                 if deadline is None:
                     raise ValidationError("Invalid date format")
             except ValidationError:
-                return JsonResponse({'success': False, 'error': 'Invalid date format'})
+                return JsonResponse(
+                    {'success': False, 'error': 'Invalid date format'}
+                )
         else:
             deadline = None
 

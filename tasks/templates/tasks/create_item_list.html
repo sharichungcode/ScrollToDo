@@ -21,7 +21,7 @@
             <h2>Create Item List</h2>
             <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
         </div>
-        <form method="post" class="needs-validation" novalidate>
+        <form id="addTaskListForm" class="needs-validation" novalidate>
             {% csrf_token %}
             <div class="form-group">
                 <label for="name">List Name</label>
@@ -46,7 +46,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <!-- Form validation script -->
+    <!-- Form validation and dynamic behavior script -->
     <script>
         (function() {
             'use strict';
@@ -63,6 +63,48 @@
                 });
             }, false);
         })();
+
+        // Handle add new item list form submission
+        document.getElementById('addTaskListForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            if (this.checkValidity() === false) {
+                event.stopPropagation();
+                this.classList.add('was-validated');
+                return;
+            }
+
+            var listName = document.getElementById('name').value;
+            var deadline = document.getElementById('deadline').value;
+
+            // Format the deadline value
+            if (deadline) {
+                var date = new Date(deadline);
+                deadline = date.toISOString().slice(0, 19).replace('T', ' ');
+            }
+
+            fetch('{% url "create_item_list" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    'name': listName,
+                    'deadline': deadline
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('An unexpected error occurred while creating the item list.');
+            });
+        });
     </script>
 </body>
 </html>
