@@ -34,6 +34,7 @@ urlpatterns = [
     path('item_classification/', views.item_classification_view, name='item_classification'),
     path('item_list/<int:list_id>/', views.item_list_detail_view, name='item_list_detail'),
     path('delete-selected-lists/', views.delete_selected_lists_view, name='delete_selected_lists'),
+    path('delete-item/<int:item_id>/', views.delete_item_view, name='delete_item'),
     path('update-priority/<int:item_id>/', views.update_priority_view, name='update_priority'),
     path('update-position/<int:item_id>/', views.update_position_view, name='update_position'),
 ]

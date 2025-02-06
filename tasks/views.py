@@ -335,3 +335,14 @@ def update_position_view(request, item_id):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+def delete_item_view(request, item_id):
+    if request.method == 'DELETE':
+        try:
+            item = get_object_or_404(Item, id=item_id, user=request.user)
+            item.delete()
+            return JsonResponse({'success': True, 'message': 'Item deleted successfully.'})
+        except Item.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item not found.'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
