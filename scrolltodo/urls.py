@@ -31,6 +31,7 @@ urlpatterns = [
     path('ajax-auth/', views.ajax_auth_view, name='ajax_auth'),
     path('create_item_list/', views.create_item_list_view, name='create_item_list'),
     path('create_item/', views.create_item_view, name='create_item'),
+    path('create_items/', views.create_items_view, name='create_items'),
     path('item_classification/', views.item_classification_view, name='item_classification'),
     path('item_list/<int:list_id>/', views.item_list_detail_view, name='item_list_detail'),
     path('delete-selected-lists/', views.delete_selected_lists_view, name='delete_selected_lists'),

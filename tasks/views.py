@@ -196,6 +196,23 @@ def create_item_view(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
+@login_required
+def create_items_view(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            titles = data.get('titles')
+            item_list_id = data.get('item_list')
+            item_list = get_object_or_404(ItemList, id=item_list_id, user=request.user)
+            items = []
+            for title in titles:
+                item = Item.objects.create(title=title, item_list=item_list, user=request.user)
+                items.append({'id': item.id, 'title': item.title})
+            return JsonResponse({'success': True, 'items': items})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
 def item_classification_view(request):
     # Your view logic here
     return render(request, 'tasks/item_classification.html')

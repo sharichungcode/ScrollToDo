@@ -108,6 +108,10 @@
 
         <div class="mt-4">
             <h3 class="fw-bold">Items</h3>
+            <form id="bulk-add-item-form" class="mb-3">
+                <textarea id="bulk-item-titles" class="form-control mb-2" placeholder="Paste items here, one per line" rows="3"></textarea>
+                <button type="submit" class="btn btn-primary">Add Items</button>
+            </form>
             <form id="add-item-form" class="d-flex mb-3">
                 <input type="text" id="new-item-title" class="form-control me-2" placeholder="New item title" required>
                 <input type="date" id="new-item-deadline" class="form-control me-2" placeholder="Deadline" optional>
@@ -555,6 +559,67 @@
             .catch(error => {
                 console.error('Unexpected error:', error);
                 alert('An unexpected error occurred while adding the item.');
+            });
+        });
+
+        // Function to add multiple items
+        document.getElementById('bulk-add-item-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const titles = document.getElementById('bulk-item-titles').value.split('\n').filter(title => title.trim() !== '');
+
+            fetch('/create_items/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    'titles': titles,
+                    'item_list': {{ item_list.id }}
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    data.items.forEach(item => {
+                        const newItem = document.createElement('div');
+                        newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
+                        newItem.setAttribute('draggable', 'true');
+                        newItem.setAttribute('data-id', item.id);
+                        newItem.setAttribute('data-position-x', '');
+                        newItem.setAttribute('data-position-y', '');
+                        newItem.setAttribute('data-priority', '');
+                        newItem.setAttribute('data-order', '');
+                        newItem.setAttribute('data-deadline', '');
+                        newItem.innerHTML = `
+                            <div>
+                                <input type="checkbox" class="select-item me-2">
+                                <strong>${item.title}</strong> <br>
+                                <small class="text-muted">Deadline: None</small>
+                                <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
+                            </div>
+                            <div>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
+                            </div>
+                        `;
+                        document.getElementById('items-list').appendChild(newItem);
+                    });
+                    document.getElementById('bulk-add-item-form').reset();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('An unexpected error occurred while adding the items.');
             });
         });
     </script>
