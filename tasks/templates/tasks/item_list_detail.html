@@ -15,9 +15,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 10px;
-            min-height: 200px;
+            height: 400px; /* Fixed height */
             margin-bottom: 20px;
             transition: background-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         .quadrant.dragover {
             background-color: #f0f0f0;
@@ -28,16 +30,29 @@
         .task-item, .item-clone {
             border: 1px solid #ccc;
             border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
+            padding: 5px;
+            margin-bottom: 5px;
             background-color: #f8f9fa;
             cursor: move;
+            display: inline-block;
+            font-size: 12px;
+            width: auto;
+        }
+        .item-clone {
+            position: absolute;
         }
         .task-item.dragging, .item-clone.dragging {
             opacity: 0.5;
         }
         .border-dark {
             border-color: #000 !important;
+        }
+        .placeholder {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            margin-bottom: 5px;
+            background-color: #f0f0f0;
         }
     </style>
 </head>
@@ -126,6 +141,8 @@
         const tasks = document.querySelectorAll(".task-item, .item-clone");
         const quadrants = document.querySelectorAll(".quadrant");
         const itemsList = document.getElementById("items-list");
+        let placeholder = document.createElement("div");
+        placeholder.className = "placeholder";
 
         tasks.forEach(task => {
             task.addEventListener("dragstart", (e) => {
@@ -135,6 +152,7 @@
 
             task.addEventListener("dragend", () => {
                 task.classList.remove("dragging");
+                placeholder.remove();
             });
         });
 
@@ -157,6 +175,11 @@
                 
                 if (draggedTask) {
                     draggedTask.classList.remove("dragging");
+                    const rect = quadrant.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    draggedTask.style.left = `${x}px`;
+                    draggedTask.style.top = `${y}px`;
                     quadrant.querySelector('.task-list').appendChild(draggedTask);
                     assignPriority(draggedTask.getAttribute('data-id'), priority);
                 }
@@ -166,10 +189,19 @@
         itemsList.addEventListener("dragover", (e) => {
             e.preventDefault();
             itemsList.classList.add("border-dark");
+
+            const draggingItem = document.querySelector(".task-item.dragging");
+            const afterElement = getDragAfterElement(itemsList, e.clientY);
+            if (afterElement == null) {
+                itemsList.appendChild(placeholder);
+            } else {
+                itemsList.insertBefore(placeholder, afterElement);
+            }
         });
 
         itemsList.addEventListener("dragleave", () => {
             itemsList.classList.remove("border-dark");
+            placeholder.remove();
         });
 
         itemsList.addEventListener("drop", (e) => {
@@ -180,9 +212,24 @@
             
             if (draggedTask) {
                 draggedTask.classList.remove("dragging");
-                itemsList.appendChild(draggedTask);
+                itemsList.insertBefore(draggedTask, placeholder);
+                placeholder.remove();
             }
         });
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll(".task-item:not(.dragging)")];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
 
         // Function to assign priority using buttons
         function assignPriority(itemId, priority) {
