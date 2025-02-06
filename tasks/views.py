@@ -218,8 +218,6 @@ def create_item_view(request):
 
     return render(request, 'tasks/create_item.html', {'form': form})
 
-
-
 def item_classification_view(request):
     # Your view logic here
     return render(request, 'tasks/item_classification.html')
@@ -246,7 +244,6 @@ def create_item_list(request):
         except json.JSONDecodeError:
             return JsonResponse({"success": False, "error": "Invalid JSON format."}, status=400)
     return JsonResponse({"success": False, "error": "Invalid request method."}, status=405)
-
 
 @login_required
 def item_list_detail_view(request, list_id):
@@ -321,6 +318,7 @@ def update_position_view(request, item_id):
             position_x = data.get('position_x')
             position_y = data.get('position_y')
             priority = data.get('priority')
+            order = data.get('order')
             item = Item.objects.get(id=item_id, item_list__user=request.user)
             if position_x is not None:
                 item.position_x = position_x
@@ -328,6 +326,8 @@ def update_position_view(request, item_id):
                 item.position_y = position_y
             if priority is not None:
                 item.priority = priority
+            if order is not None:
+                item.order = order
             item.save()
             return JsonResponse({'success': True})
         except Item.DoesNotExist:

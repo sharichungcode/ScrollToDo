@@ -20,18 +20,19 @@ class Item(models.Model):
     ]
 
     title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)  # Ensure this field is defined
+    description = models.TextField(blank=True, null=True)
     completed = models.BooleanField(default=False)
     deadline = models.DateField(null=True, blank=True)
-    priority = models.CharField(max_length=50, null=True, blank=True)
-    position_x = models.IntegerField(null=True, blank=True)
-    position_y = models.IntegerField(null=True, blank=True)
+    priority = models.CharField(max_length=50, null=True, blank=True, choices=PRIORITY_CHOICES)
+    position_x = models.FloatField(null=True, blank=True)
+    position_y = models.FloatField(null=True, blank=True)
+    order = models.IntegerField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     item_list = models.ForeignKey('ItemList', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
-    
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     default_lists_created = models.BooleanField(default=False)

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ item_list.name }} - Priority Quadrants</title>
+    <title>ScrollToDo - Organize, Prioritize, and Conquer</title>
     {% load static %}
     <link href="{% static 'tasks/styles.css' %}" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -110,20 +110,20 @@
             <h3 class="fw-bold">Items</h3>
             <div class="list-group" id="items-list">
                 {% for item in items %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}">
-                        <div>
-                            <input type="checkbox" class="me-2" {% if item.completed %}checked{% endif %}>
-                            <strong>{{ item.title }}</strong> <br>
-                            <small class="text-muted">Deadline: {{ item.deadline }}</small>
-                            <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
-                        </div>
-                        <div>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
-                        </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}">
+                    <div>
+                        <input type="checkbox" class="me-2" {% if item.completed %}checked{% endif %}>
+                        <strong>{{ item.title }}</strong> <br>
+                        <small class="text-muted">Deadline: {{ item.deadline }}</small>
+                        <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
                     </div>
+                    <div>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
+                    </div>
+                </div>
                 {% endfor %}
             </div>
         </div>
@@ -227,7 +227,7 @@
                 draggedTask.classList.remove("dragging");
                 itemsList.insertBefore(draggedTask, placeholder);
                 placeholder.remove();
-                savePosition(draggedTask.getAttribute('data-id'), null, null, null);
+                saveOrder();
             }
         });
 
@@ -246,35 +246,108 @@
         }
 
         // Function to save position and priority
-        function savePosition(itemId, positionX, positionY, priority) {
-            console.log(`Saving position for item ${itemId}: x=${positionX}, y=${positionY}, priority=${priority}`);
-            fetch(`/update-position/${itemId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    'position_x': positionX,
-                    'position_y': positionY,
-                    'priority': priority
+function savePosition(itemId, positionX, positionY, priority) {
+    console.log(`Saving position for item ${itemId}: x=${positionX}, y=${positionY}, priority=${priority}`);
+    fetch(`/update-position/${itemId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            'position_x': positionX,
+            'position_y': positionY,
+            'priority': priority
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (!data.success) {
+            console.error('Error:', data.error);
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Unexpected error:', error);
+        alert('An unexpected error occurred while saving the position.');
+    });
+}
+
+// Function to load saved positions and priorities
+function loadSavedPositions() {
+    const items = document.querySelectorAll('.task-item');
+    items.forEach(item => {
+        const itemId = item.getAttribute('data-id');
+        const positionX = item.getAttribute('data-position-x');
+        const positionY = item.getAttribute('data-position-y');
+        const priority = item.getAttribute('data-priority');
+
+        if (positionX && positionY && priority) {
+            const quadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+            const clone = document.createElement('div');
+            clone.classList.add('item-clone');
+            clone.setAttribute('draggable', 'true');
+            clone.setAttribute('data-id', itemId);
+            clone.setAttribute('data-clone-id', itemId);
+            clone.style.left = `${positionX}px`;
+            clone.style.top = `${positionY}px`;
+            clone.innerHTML = `<strong>${item.querySelector('strong').innerText}</strong>`;
+
+            // Add drag and drop event listeners to the clone
+            clone.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData("text/plain", e.target.innerText);
+                clone.classList.add('dragging');
+            });
+            clone.addEventListener('dragend', function() {
+                clone.classList.remove('dragging');
+            });
+
+            quadrant.appendChild(clone);
+        }
+    });
+}
+
+// Call the function to load saved positions when the page is loaded
+document.addEventListener('DOMContentLoaded', loadSavedPositions);
+
+        // Function to save the order of items
+        function saveOrder() {
+            const items = document.querySelectorAll('.task-item');
+            items.forEach((item, index) => {
+                const itemId = item.getAttribute('data-id');
+                const order = index + 1;
+                item.setAttribute('data-order', order);
+                fetch(`/update-position/${itemId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        'order': order
+                    })
                 })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (!data.success) {
-                    console.error('Error:', data.error);
-                    alert('Error: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Unexpected error:', error);
-                alert('An unexpected error occurred while saving the position.');
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.success) {
+                        console.error('Error:', data.error);
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Unexpected error:', error);
+                    alert('An unexpected error occurred while saving the order.');
+                });
             });
         }
 
