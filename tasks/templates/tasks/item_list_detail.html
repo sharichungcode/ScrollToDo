@@ -10,51 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        .quadrant {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-            height: 400px; /* Fixed height */
-            margin-bottom: 20px;
-            transition: background-color 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .quadrant.dragover {
-            background-color: #f0f0f0;
-        }
-        .quadrant h4 {
-            margin-bottom: 10px;
-        }
-        .task-item, .item-clone {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 5px;
-            margin-bottom: 5px;
-            background-color: #f8f9fa;
-            cursor: move;
-            display: inline-block;
-            font-size: 12px;
-            width: auto;
-        }
-        .item-clone {
-            position: absolute;
-        }
-        .task-item.dragging, .item-clone.dragging {
-            opacity: 0.5;
-        }
-        .border-dark {
-            border-color: #000 !important;
-        }
-        .placeholder {
-            border: 2px dashed #ccc;
-            border-radius: 5px;
-            padding: 5px;
-            margin-bottom: 5px;
-            background-color: #f0f0f0;
-        }
-    </style>
 </head>
 <body class="d-flex flex-column min-vh-100 bg-light">
 
@@ -71,35 +26,43 @@
         <div class="mt-4">
             <h3 class="fw-bold">Priority Quadrants</h3>
             <div class="row">
-                <div class="col-md-6">
-                    <div class="quadrant" id="doFirst">
-                        <h4>Do First</h4>
-                        <div class="task-list" data-priority="doFirst">
-                            <!-- Tasks will be dynamically added here -->
+                <div class="col-12 position-relative border-left border-bottom border-3 border-dark p-3">
+                    <i class="fas fa-caret-up position-absolute" style="top: -5px; left: -5px;"></i>
+                    <p class="position-absolute" style="top: -.6rem; left: 1rem;">Impact</p>
+                    <i class="fas fa-caret-right position-absolute" style="bottom: -8px; right: -5px;"></i>
+                    <p class="position-absolute" style="bottom: -2.5rem; right: 0;">Effort</p>
+                    <div class="row m-0">
+                        <div class="col-6 m-0 p-0">
+                            <div class="quadrant border m-0 p-3 position-relative overflow-hidden" id="doFirst">
+                                <h4 class="mb-3">Do First</h4>
+                                <div class="task-list" data-priority="doFirst">
+                                    <!-- Tasks will be dynamically added here -->
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="quadrant" id="schedule">
-                        <h4>Schedule</h4>
-                        <div class="task-list" data-priority="schedule">
-                            <!-- Tasks will be dynamically added here -->
+                        <div class="col-6 m-0 p-0">
+                            <div class="quadrant border m-0 p-3 position-relative overflow-hidden" id="schedule">
+                                <h4 class="mb-3">Schedule</h4>
+                                <div class="task-list" data-priority="schedule">
+                                    <!-- Tasks will be dynamically added here -->
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="quadrant" id="delegate">
-                        <h4>Delegate</h4>
-                        <div class="task-list" data-priority="delegate">
-                            <!-- Tasks will be dynamically added here -->
+                        <div class="col-6 m-0 p-0">
+                            <div class="quadrant border m-0 p-3 position-relative overflow-hidden" id="delegate">
+                                <h4 class="mb-3">Delegate</h4>
+                                <div class="task-list" data-priority="delegate">
+                                    <!-- Tasks will be dynamically added here -->
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="quadrant" id="eliminate">
-                        <h4>Eliminate</h4>
-                        <div class="task-list" data-priority="eliminate">
-                            <!-- Tasks will be dynamically added here -->
+                        <div class="col-6 m-0 p-0">
+                            <div class="quadrant border m-0 p-3 position-relative overflow-hidden" id="eliminate">
+                                <h4 class="mb-3">Eliminate</h4>
+                                <div class="task-list" data-priority="eliminate">
+                                    <!-- Tasks will be dynamically added here -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -125,20 +88,20 @@
             <button type="button" class="btn btn-danger mb-3" onclick="deleteSelectedItems()">Delete Selected Items</button>
             <div class="list-group" id="items-list">
                 {% for item in items %}
-                <div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
-                    <div>
-                        <input type="checkbox" class="select-item me-2">
-                        <strong>{{ item.title }}</strong> <br>
-                        <small class="text-muted">Deadline: {{ item.deadline }}</small>
-                        <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
-                    </div>
-                    <div>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
-                    </div>
-                </div>
+<div class="list-group-item d-flex justify-content-between align-items-center task-item border rounded p-2 mb-2 bg-light" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
+    <div>
+        <input type="checkbox" class="select-item me-2">
+        <strong>{{ item.title }}</strong> <br>
+        <small class="text-muted">Deadline: {{ item.deadline }}</small>
+        <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
+    </div>
+    <div>
+        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
+    </div>
+</div>
                 {% endfor %}
             </div>
         </div>

@@ -68,53 +68,33 @@ header {
 }
 
 /* Priority Matrix */
-.low-priority {
-    background-color: var(--low-priority);
-    color: var(--white);
+.quadrant {
+    height: 20rem; /* Fixed height */
+    transition: background-color 0.3s ease;
 }
-
-.medium-priority {
-    background-color: var(--medium-priority);
-    color: var(--white);
+.quadrant.dragover {
+    background-color: #f0f0f0;
 }
-
-.high-priority {
-    background-color: var(--high-priority);
-    color: var(--white);
+.quadrant h4 {
+    margin-bottom: 10px;
 }
-
-/* Status Colors */
-.success {
-    color: var(--success-green);
-}
-
-.warning {
-    color: var(--warning-yellow);
-}
-
-.danger {
-    color: var(--danger-red);
-}
-
-/* Use CSS to hide the error messages initially. */
-.errorlist {
-    display: none;
-}
-
-/* Add this to style the Priority Matrix preview */
-.priority-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 10px;
-}
-
-.priority-cell {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.task-item, .item-clone {
     border: 1px solid #ccc;
     border-radius: 5px;
-    padding: 20px;
-    text-align: center;
+    padding: 5px;
+    margin-bottom: 5px;
+    background-color: #f8f9fa;
+    cursor: move;
+    display: inline-block;
+    font-size: 12px;
+    width: auto;
+}
+.item-clone {
+    position: absolute;
+}
+.task-item.dragging, .item-clone.dragging {
+    opacity: 0.5;
+}
+.border-dark {
+    border-color: #000 !important;
 }
