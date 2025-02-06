@@ -184,39 +184,17 @@ def create_item_list_view(request):
 @login_required
 def create_item_view(request):
     if request.method == 'POST':
-        form = ItemForm(request.POST, request=request)
-        form.fields['item_list'].queryset = ItemList.objects.filter(user=request.user)
-
-        if form.is_valid():
-            item = form.save(commit=False)
-            item.user = request.user
-            item_list = form.cleaned_data.get('item_list')
-            new_list_name = form.cleaned_data.get('new_list_name')
-
-            # Check if a new list is already created by AJAX request
-            if new_list_name and item_list is None:
-                # Prevent duplicate list creation
-                item_list, created = ItemList.objects.get_or_create(name=new_list_name, user=request.user)
-
-            item.item_list = item_list
-            item.save()
-
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': True, 'message': 'Item created successfully.'})
-
-            messages.success(request, 'Item created successfully.')
-            return redirect('dashboard')
-        
-        else:
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': False, 'errors': form.errors}, status=400)
-            messages.error(request, 'Form is not valid. Please correct the errors below.')
-
-    else:
-        form = ItemForm(request=request)
-        form.fields['item_list'].queryset = ItemList.objects.filter(user=request.user)
-
-    return render(request, 'tasks/create_item.html', {'form': form})
+        try:
+            data = json.loads(request.body)
+            title = data.get('title')
+            deadline = data.get('deadline') if data.get('deadline') else None
+            item_list_id = data.get('item_list')
+            item_list = get_object_or_404(ItemList, id=item_list_id, user=request.user)
+            item = Item.objects.create(title=title, deadline=deadline, item_list=item_list, user=request.user)
+            return JsonResponse({'success': True, 'item': {'id': item.id, 'title': item.title, 'deadline': item.deadline}})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
 def item_classification_view(request):
     # Your view logic here
