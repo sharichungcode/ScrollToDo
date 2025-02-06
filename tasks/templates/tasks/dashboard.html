@@ -142,7 +142,8 @@
                         </form>
                     </div>
                     <div class="tab-pane fade" id="bulk-item" role="tabpanel" aria-labelledby="bulk-item-tab">
-                        <form id="bulk-add-item-form" class="mb-3">
+                        <form id="bulk-add-item-form" class="needs-validation" novalidate>
+                            {% csrf_token %}
                             <textarea id="bulk-item-titles" class="form-control mb-2" placeholder="Paste items here, one per line" rows="3"></textarea>
                             <div class="form-group">
                                 <label for="bulk_item_list">Assign to List</label>
@@ -164,7 +165,7 @@
                                     New list name is required and must be at least 3 characters long.
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Add Items</button>
+                            <button type="submit" class="btn btn-primary btn-block mt-4">Add Items</button>
                         </form>
                     </div>
                 </div>
@@ -347,19 +348,31 @@ document.getElementById('deleteSelectedListsBtn').addEventListener('click', func
     }
 });
 
-        // Handle add new item form submission
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('item_list').addEventListener('change', function() {
-                var newListGroup = document.getElementById('new_list_group');
-                if (this.value === 'new') {
-                    newListGroup.style.display = 'block';
-                    document.getElementById('new_list_name').required = true;
-                } else {
-                    newListGroup.style.display = 'none';
-                    document.getElementById('new_list_name').required = false;
-                }
-            });
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle new list selection for single item form
+    document.getElementById('item_list').addEventListener('change', function() {
+        var newListGroup = document.getElementById('new_list_group');
+        if (this.value === 'new') {
+            newListGroup.style.display = 'block';
+            document.getElementById('new_list_name').required = true;
+        } else {
+            newListGroup.style.display = 'none';
+            document.getElementById('new_list_name').required = false;
+        }
+    });
+
+    // Handle new list selection for bulk item form
+    document.getElementById('bulk_item_list').addEventListener('change', function() {
+        var bulkNewListGroup = document.getElementById('bulk_new_list_group');
+        if (this.value === 'new') {
+            bulkNewListGroup.style.display = 'block';
+            document.getElementById('bulk_new_list_name').required = true;
+        } else {
+            bulkNewListGroup.style.display = 'none';
+            document.getElementById('bulk_new_list_name').required = false;
+        }
+    });
+});
 
         // Function to add multiple items
         document.getElementById('bulk-add-item-form').addEventListener('submit', function(e) {
