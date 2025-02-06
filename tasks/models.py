@@ -19,13 +19,15 @@ class Item(models.Model):
         ('eliminate', 'Eliminate')
     ]
 
-    title = models.CharField(max_length=200)
-    description = models.TextField(blank=True, null=True)
-    deadline = models.DateTimeField(blank=True, null=True)
-    item_list = models.ForeignKey(ItemList, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)  # Ensure this field is defined
     completed = models.BooleanField(default=False)
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='doFirst')
+    deadline = models.DateField(null=True, blank=True)
+    priority = models.CharField(max_length=50, null=True, blank=True)
+    position_x = models.IntegerField(null=True, blank=True)
+    position_y = models.IntegerField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    item_list = models.ForeignKey('ItemList', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title

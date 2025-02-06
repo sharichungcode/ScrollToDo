@@ -17,7 +17,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from tasks import views
 
 urlpatterns = [
@@ -35,6 +35,7 @@ urlpatterns = [
     path('item_list/<int:list_id>/', views.item_list_detail_view, name='item_list_detail'),
     path('delete-selected-lists/', views.delete_selected_lists_view, name='delete_selected_lists'),
     path('update-priority/<int:item_id>/', views.update_priority_view, name='update_priority'),
+    path('update-position/<int:item_id>/', views.update_position_view, name='update_position'),
 ]
 
 if settings.DEBUG:

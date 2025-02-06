@@ -312,3 +312,26 @@ def update_priority_view(request, item_id):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+def update_position_view(request, item_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            position_x = data.get('position_x')
+            position_y = data.get('position_y')
+            priority = data.get('priority')
+            item = Item.objects.get(id=item_id, item_list__user=request.user)
+            if position_x is not None:
+                item.position_x = position_x
+            if position_y is not None:
+                item.position_y = position_y
+            if priority is not None:
+                item.priority = priority
+            item.save()
+            return JsonResponse({'success': True})
+        except Item.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item not found'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
