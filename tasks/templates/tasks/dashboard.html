@@ -91,46 +91,83 @@
                 <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
-                <form id="addTaskForm" method="post" action="{% url 'create_item' %}" class="needs-validation" novalidate>
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="title">Item Title</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
-                        <div class="invalid-feedback">
-                            Please provide an item title.
-                        </div>
+                <ul class="nav nav-tabs" id="addItemTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="single-item-tab" data-bs-toggle="tab" href="#single-item" role="tab" aria-controls="single-item" aria-selected="true">Single Item</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="bulk-item-tab" data-bs-toggle="tab" href="#bulk-item" role="tab" aria-controls="bulk-item" aria-selected="false">Bulk Items</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="addItemTabContent">
+                    <div class="tab-pane fade show active" id="single-item" role="tabpanel" aria-labelledby="single-item-tab">
+                        <form id="addTaskForm" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="title">Item Title</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                                <div class="invalid-feedback">
+                                    Please provide an item title.
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="description">Item Description</label>
+                                <textarea class="form-control" id="description" name="description"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="deadline">Deadline</label>
+                                <input type="datetime-local" class="form-control" id="deadline" name="deadline">
+                            </div>
+                            <div class="form-group">
+                                <label for="item_list">Assign to List</label>
+                                <select class="form-control" id="item_list" name="item_list" required>
+                                    <option value="">Select an item list</option>
+                                    {% for item_list in request.user.itemlist_set.all %}
+                                        <option value="{{ item_list.id }}">{{ item_list.name }}</option>
+                                    {% endfor %}
+                                    <option value="new">+ New List</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select an item list.
+                                </div>
+                            </div>
+                            <div class="form-group" id="new_list_group" style="display: none;">
+                                <label for="new_list_name">New List Name</label>
+                                <input type="text" class="form-control" id="new_list_name" name="new_list_name" minlength="3">
+                                <div class="invalid-feedback">
+                                    New list name is required and must be at least 3 characters long.
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block mt-4">Create Item</button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="description">Item Description</label>
-                        <textarea class="form-control" id="description" name="description"></textarea>
+                    <div class="tab-pane fade" id="bulk-item" role="tabpanel" aria-labelledby="bulk-item-tab">
+                        <form id="bulk-add-item-form" class="mb-3">
+                            <textarea id="bulk-item-titles" class="form-control mb-2" placeholder="Paste items here, one per line" rows="3"></textarea>
+                            <div class="form-group">
+                                <label for="bulk_item_list">Assign to List</label>
+                                <select class="form-control" id="bulk_item_list" name="bulk_item_list" required>
+                                    <option value="">Select an item list</option>
+                                    {% for item_list in request.user.itemlist_set.all %}
+                                        <option value="{{ item_list.id }}">{{ item_list.name }}</option>
+                                    {% endfor %}
+                                    <option value="new">+ New List</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select an item list.
+                                </div>
+                            </div>
+                            <div class="form-group" id="bulk_new_list_group" style="display: none;">
+                                <label for="bulk_new_list_name">New List Name</label>
+                                <input type="text" class="form-control" id="bulk_new_list_name" name="bulk_new_list_name" minlength="3">
+                                <div class="invalid-feedback">
+                                    New list name is required and must be at least 3 characters long.
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Items</button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="deadline">Deadline</label>
-                        <input type="datetime-local" class="form-control" id="deadline" name="deadline">
-                    </div>
-                    <div class="form-group">
-                        <label for="item_list">Assign to List</label>
-                        <select class="form-control" id="item_list" name="item_list" required>
-                            <option value="">Select an item list</option>
-                            {% for item_list in request.user.itemlist_set.all %}
-                                <option value="{{ item_list.id }}">{{ item_list.name }}</option>
-                            {% endfor %}
-                            <option value="new">+ New List</option>
-                        </select>
-                        <div class="invalid-feedback">
-                            Please select an item list.
-                        </div>
-                    </div>
-                    <div class="form-group" id="new_list_group" style="display: none;">
-                        <label for="new_list_name">New List Name</label>
-                        <input type="text" class="form-control" id="new_list_name" name="new_list_name" minlength="3">
-                        <div class="invalid-feedback">
-                            New list name is required and must be at least 3 characters long.
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-block mt-4">Create Item</button>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -323,6 +360,136 @@ document.getElementById('deleteSelectedListsBtn').addEventListener('click', func
                 }
             });
         });
+
+        // Function to add multiple items
+        document.getElementById('bulk-add-item-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const titles = document.getElementById('bulk-item-titles').value.split('\n').filter(title => title.trim() !== '');
+            const itemListId = document.getElementById('bulk_item_list').value;
+            const newListName = document.getElementById('bulk_new_list_name').value;
+
+            fetch('/create_items/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    'titles': titles,
+                    'item_list': itemListId,
+                    'new_list_name': newListName
+                })
+            })
+            .then(response => {
+                console.log('Response:', response); // Log the response
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data:', data); // Log the data
+                if (data.success) {
+                    const itemsList = document.getElementById('items-list');
+                    if (itemsList) {
+                        data.items.forEach(item => {
+                            const newItem = document.createElement('div');
+                            newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
+                            newItem.setAttribute('draggable', 'true');
+                            newItem.setAttribute('data-id', item.id);
+                            newItem.setAttribute('data-position-x', '');
+                            newItem.setAttribute('data-position-y', '');
+                            newItem.setAttribute('data-priority', '');
+                            newItem.setAttribute('data-order', '');
+                            newItem.setAttribute('data-deadline', '');
+                            newItem.innerHTML = `
+                                <div>
+                                    <input type="checkbox" class="select-item me-2">
+                                    <strong>${item.title}</strong> <br>
+                                    <small class="text-muted">Deadline: None</small>
+                                    <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
+                                </div>
+                                <div>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
+                                </div>
+                            `;
+                            itemsList.appendChild(newItem);
+                        });
+                        document.getElementById('bulk-add-item-form').reset();
+                    } else {
+                        console.error('Element with ID "items-list" not found.');
+                    }
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('An unexpected error occurred while adding the items.');
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("addTaskForm");
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();  // Stop normal form submission
+        // Get CSRF Token for security
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        // Gather form data
+        let formData = {
+            title: document.getElementById("title").value,
+            description: document.getElementById("description").value,
+            deadline: document.getElementById("deadline").value || null,
+            item_list: document.getElementById("item_list").value,
+            new_list_name: document.getElementById("new_list_name").value.trim()
+        };
+        // Ensure valid input
+        if (!formData.title) {
+            alert("Please enter a title.");
+            return;
+        }
+        if (formData.item_list === "new" && !formData.new_list_name) {
+            alert("Please enter a new list name.");
+            return;
+        }
+        // Send AJAX request to create item
+        fetch("{% url 'create_item' %}", {
+            method: "POST",
+            body: JSON.stringify(formData),
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById("addTaskModal"));
+                modal.hide();
+                // Reload dashboard content dynamically
+                location.reload();
+            } else {
+                alert("Error: " + data.error);
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+    // Show/hide new list input field dynamically
+    document.getElementById("item_list").addEventListener("change", function () {
+        const newListGroup = document.getElementById("new_list_group");
+        if (this.value === "new") {
+            newListGroup.style.display = "block";
+            document.getElementById("new_list_name").required = true;
+        } else {
+            newListGroup.style.display = "none";
+            document.getElementById("new_list_name").required = false;
+        }
+    });
+});
     </script>
 </body>
 </html>

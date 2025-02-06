@@ -183,18 +183,50 @@ def create_item_list_view(request):
 
 @login_required
 def create_item_view(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             data = json.loads(request.body)
-            title = data.get('title')
-            deadline = data.get('deadline') if data.get('deadline') else None
-            item_list_id = data.get('item_list')
-            item_list = get_object_or_404(ItemList, id=item_list_id, user=request.user)
-            item = Item.objects.create(title=title, deadline=deadline, item_list=item_list, user=request.user)
-            return JsonResponse({'success': True, 'item': {'id': item.id, 'title': item.title, 'deadline': item.deadline}})
+            title = data.get("title")
+            description = data.get("description", "")
+            deadline = data.get("deadline")
+            item_list_id = data.get("item_list")
+            new_list_name = data.get("new_list_name", "").strip()
+
+            # Handle deadline parsing
+            if deadline:
+                deadline = parse_datetime(deadline)
+                if not deadline:
+                    return JsonResponse({"success": False, "error": "Invalid date format."})
+
+            # Determine the correct item list
+            if new_list_name:
+                item_list = ItemList.objects.create(name=new_list_name, user=request.user)
+            else:
+                item_list = get_object_or_404(ItemList, id=item_list_id, user=request.user)
+
+            # Create the item
+            item = Item.objects.create(
+                title=title,
+                description=description,
+                deadline=deadline,
+                item_list=item_list,
+                user=request.user
+            )
+
+            return JsonResponse({
+                "success": True,
+                "item": {
+                    "id": item.id,
+                    "title": item.title,
+                    "list_name": item_list.name,
+                    "deadline": item.deadline
+                }
+            })
+
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+
+    return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
 
 @login_required
 def create_items_view(request):
@@ -203,7 +235,14 @@ def create_items_view(request):
             data = json.loads(request.body)
             titles = data.get('titles')
             item_list_id = data.get('item_list')
-            item_list = get_object_or_404(ItemList, id=item_list_id, user=request.user)
+            new_list_name = data.get('new_list_name')
+            item_list = None
+
+            if new_list_name:
+                item_list = ItemList.objects.create(name=new_list_name, user=request.user)
+            else:
+                item_list = get_object_or_404(ItemList, id=item_list_id, user=request.user)
+
             items = []
             for title in titles:
                 item = Item.objects.create(title=title, item_list=item_list, user=request.user)
