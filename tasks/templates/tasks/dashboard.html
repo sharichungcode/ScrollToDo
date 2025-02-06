@@ -254,125 +254,124 @@
         })();
 
         // Handle add new item list form submission
-document.getElementById('addTaskListForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    if (this.checkValidity() === false) {
-        event.stopPropagation();
-        this.classList.add('was-validated');
-        return;
-    }
+        document.getElementById('addTaskListForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            if (this.checkValidity() === false) {
+                event.stopPropagation();
+                this.classList.add('was-validated');
+                return;
+            }
 
-    var listName = document.getElementById('name').value;
-    var deadline = document.getElementById('deadline').value;
+            var listName = document.getElementById('name').value;
+            var deadline = document.getElementById('deadline').value;
 
-    // Format the deadline value
-    if (deadline) {
-        var date = new Date(deadline);
-        deadline = date.toISOString().slice(0, 19).replace('T', ' ');
-    }
+            // Format the deadline value
+            if (deadline) {
+                var date = new Date(deadline);
+                deadline = date.toISOString().slice(0, 19).replace('T', ' ');
+            }
 
-    fetch('{% url "create_item_list" %}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify({
-            'name': listName,
-            'deadline': deadline
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            var modal = bootstrap.Modal.getInstance(document.getElementById('addTaskListModal'));
-            modal.hide();
-            location.reload(); // Reload the page to reflect changes
-        } else {
-            alert('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        alert('An unexpected error occurred while creating the item list.');
-    });
-});
-
-        // Enable delete button if any list is selected
-document.querySelectorAll('.form-check-input').forEach(function(checkbox) {
-    checkbox.addEventListener('change', function() {
-        var selectedLists = document.querySelectorAll('.form-check-input:checked');
-        document.getElementById('confirmDeleteBtn').disabled = selectedLists.length === 0;
-        document.getElementById('deleteSelectedListsBtn').disabled = selectedLists.length === 0;
-        document.getElementById('deleteSelectedListsBtn').classList.toggle('d-none', selectedLists.length === 0);
-        document.getElementById('bulkActionToolbar').classList.toggle('d-none', selectedLists.length === 0);
-    });
-});
-
-// Handle delete selected lists button click
-document.getElementById('deleteSelectedListsBtn').addEventListener('click', function() {
-    var selectedLists = [];
-    document.querySelectorAll('.form-check-input:checked').forEach(function(checkbox) {
-        selectedLists.push(checkbox.value);
-    });
-
-    if (selectedLists.length > 0) {
-        var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
-        deleteModal.show();
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-            // Send fetch request to delete selected lists
-            fetch('{% url "delete_selected_lists" %}', {
+            fetch('{% url "create_item_list" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
                 body: JSON.stringify({
-                    'selected_lists': selectedLists
+                    'name': listName,
+                    'deadline': deadline
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    deleteModal.hide();
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('addTaskListModal'));
+                    modal.hide();
                     location.reload(); // Reload the page to reflect changes
                 } else {
                     alert('Error: ' + data.error);
                 }
             })
             .catch(error => {
-                alert('An unexpected error occurred while deleting the lists.');
+                alert('An unexpected error occurred while creating the item list.');
             });
         });
-    } else {
-        alert('No lists selected.');
-    }
-});
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle new list selection for single item form
-    document.getElementById('item_list').addEventListener('change', function() {
-        var newListGroup = document.getElementById('new_list_group');
-        if (this.value === 'new') {
-            newListGroup.style.display = 'block';
-            document.getElementById('new_list_name').required = true;
-        } else {
-            newListGroup.style.display = 'none';
-            document.getElementById('new_list_name').required = false;
-        }
-    });
+                // Enable delete button if any list is selected
+        document.querySelectorAll('.form-check-input').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                var selectedLists = document.querySelectorAll('.form-check-input:checked');
+                document.getElementById('confirmDeleteBtn').disabled = selectedLists.length === 0;
+                document.getElementById('deleteSelectedListsBtn').disabled = selectedLists.length === 0;
+                document.getElementById('deleteSelectedListsBtn').classList.toggle('d-none', selectedLists.length === 0);
+                document.getElementById('bulkActionToolbar').classList.toggle('d-none', selectedLists.length === 0);
+            });
+        });
 
-    // Handle new list selection for bulk item form
-    document.getElementById('bulk_item_list').addEventListener('change', function() {
-        var bulkNewListGroup = document.getElementById('bulk_new_list_group');
-        if (this.value === 'new') {
-            bulkNewListGroup.style.display = 'block';
-            document.getElementById('bulk_new_list_name').required = true;
-        } else {
-            bulkNewListGroup.style.display = 'none';
-            document.getElementById('bulk_new_list_name').required = false;
-        }
-    });
-});
+        // Handle delete selected lists button click
+        document.getElementById('deleteSelectedListsBtn').addEventListener('click', function() {
+            var selectedLists = [];
+            document.querySelectorAll('.form-check-input:checked').forEach(function(checkbox) {
+                selectedLists.push(checkbox.value);
+            });
+
+            if (selectedLists.length > 0) {
+                var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                deleteModal.show();
+                document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                    // Send fetch request to delete selected lists
+                    fetch('{% url "delete_selected_lists" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            'selected_lists': selectedLists
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            deleteModal.hide();
+                            location.reload(); // Reload the page to reflect changes
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        alert('An unexpected error occurred while deleting the lists.');
+                    });
+                });
+            } else {
+                alert('No lists selected.');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+        // Handle new list selection for single item form
+        document.getElementById('item_list').addEventListener('change', function() {
+            var newListGroup = document.getElementById('new_list_group');
+            if (this.value === 'new') {
+                newListGroup.style.display = 'block';
+                document.getElementById('new_list_name').required = true;
+            } else {
+                newListGroup.style.display = 'none';
+                document.getElementById('new_list_name').required = false;
+            }
+        });
+
+        // Handle new list selection for bulk item form
+        document.getElementById('bulk_item_list').addEventListener('change', function() {
+            var bulkNewListGroup = document.getElementById('bulk_new_list_group');
+            if (this.value === 'new') {
+                bulkNewListGroup.style.display = 'block';
+                document.getElementById('bulk_new_list_name').required = true;
+            } else {
+                bulkNewListGroup.style.display = 'none';
+                document.getElementById('bulk_new_list_name').required = false;
+            }
+        });
 
         // Function to add multiple items
         document.getElementById('bulk-add-item-form').addEventListener('submit', function(e) {
@@ -435,6 +434,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         console.error('Element with ID "items-list" not found.');
                     }
+
+                    // Close the modal
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('addTaskModal'));
+                    modal.hide();
+
+                    // Reload the page to reflect changes
+                    location.reload();
                 } else {
                     alert('Error: ' + data.error);
                 }
@@ -444,6 +450,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('An unexpected error occurred while adding the items.');
             });
         });
+    });
+
+        
 
         document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("addTaskForm");
