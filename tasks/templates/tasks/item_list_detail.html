@@ -108,9 +108,14 @@
 
         <div class="mt-4">
             <h3 class="fw-bold">Items</h3>
+            <div class="btn-group mb-3" role="group" aria-label="Sorting options">
+                <button type="button" class="btn btn-secondary" onclick="sortItems('deadline')">Sort by Deadline</button>
+                <button type="button" class="btn btn-secondary" onclick="sortItems('priority')">Sort by Priority</button>
+                <button type="button" class="btn btn-secondary" onclick="sortItems('alphabet')">Sort by Alphabet</button>
+            </div>
             <div class="list-group" id="items-list">
                 {% for item in items %}
-                <div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}">
+                <div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
                     <div>
                         <input type="checkbox" class="me-2" {% if item.completed %}checked{% endif %}>
                         <strong>{{ item.title }}</strong> <br>
@@ -246,110 +251,110 @@
         }
 
         // Function to save position and priority
-function savePosition(itemId, positionX, positionY, priority) {
-    console.log(`Saving position for item ${itemId}: x=${positionX}, y=${positionY}, priority=${priority}`);
-    fetch(`/update-position/${itemId}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify({
-            'position_x': positionX,
-            'position_y': positionY,
-            'priority': priority
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (!data.success) {
-            console.error('Error:', data.error);
-            alert('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Unexpected error:', error);
-        alert('An unexpected error occurred while saving the position.');
-    });
-}
-
-// Function to load saved positions and priorities
-function loadSavedPositions() {
-    const items = document.querySelectorAll('.task-item');
-    items.forEach(item => {
-        const itemId = item.getAttribute('data-id');
-        const positionX = item.getAttribute('data-position-x');
-        const positionY = item.getAttribute('data-position-y');
-        const priority = item.getAttribute('data-priority');
-
-        if (positionX && positionY && priority) {
-            const quadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
-            const clone = document.createElement('div');
-            clone.classList.add('item-clone');
-            clone.setAttribute('draggable', 'true');
-            clone.setAttribute('data-id', itemId);
-            clone.setAttribute('data-clone-id', itemId);
-            clone.style.left = `${positionX}px`;
-            clone.style.top = `${positionY}px`;
-            clone.innerHTML = `<strong>${item.querySelector('strong').innerText}</strong>`;
-
-            // Add drag and drop event listeners to the clone
-            clone.addEventListener('dragstart', function(e) {
-                e.dataTransfer.setData("text/plain", e.target.innerText);
-                clone.classList.add('dragging');
+        function savePosition(itemId, positionX, positionY, priority) {
+            console.log(`Saving position for item ${itemId}: x=${positionX}, y=${positionY}, priority=${priority}`);
+            fetch(`/update-position/${itemId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    'position_x': positionX,
+                    'position_y': positionY,
+                    'priority': priority
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                    console.error('Error:', data.error);
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('An unexpected error occurred while saving the position.');
             });
-            clone.addEventListener('dragend', function() {
-                clone.classList.remove('dragging');
-            });
-
-            quadrant.appendChild(clone);
         }
-    });
-}
-
-// Call the function to load saved positions when the page is loaded
-document.addEventListener('DOMContentLoaded', loadSavedPositions);
 
         // Function to save the order of items
-        function saveOrder() {
-            const items = document.querySelectorAll('.task-item');
-            items.forEach((item, index) => {
-                const itemId = item.getAttribute('data-id');
-                const order = index + 1;
-                item.setAttribute('data-order', order);
-                fetch(`/update-position/${itemId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        'order': order
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data.success) {
-                        console.error('Error:', data.error);
-                        alert('Error: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Unexpected error:', error);
-                    alert('An unexpected error occurred while saving the order.');
-                });
-            });
-        }
+function saveOrder() {
+    const items = document.querySelectorAll('.task-item');
+    items.forEach((item, index) => {
+        const itemId = item.getAttribute('data-id');
+        const order = index + 1;
+        item.setAttribute('data-order', order);
+        fetch(`/update-position/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'order': order
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                console.error('Error:', data.error);
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('An unexpected error occurred while saving the order.');
+        });
+    });
+}
+
+// Function to sort items
+function sortItems(criteria) {
+    const itemsList = document.getElementById('items-list');
+    const items = Array.from(itemsList.children);
+
+    if (criteria === 'priority') {
+        const priorityOrder = ['doFirst', 'schedule', 'delegate', 'eliminate'];
+        items.sort((a, b) => {
+            return priorityOrder.indexOf(a.getAttribute('data-priority')) - priorityOrder.indexOf(b.getAttribute('data-priority'));
+        });
+    } else {
+        items.sort((a, b) => {
+            if (criteria === 'deadline') {
+                return new Date(a.getAttribute('data-deadline')) - new Date(b.getAttribute('data-deadline'));
+            } else if (criteria === 'alphabet') {
+                return a.querySelector('strong').innerText.localeCompare(b.querySelector('strong').innerText);
+            }
+        });
+    }
+
+    items.forEach(item => itemsList.appendChild(item));
+    saveOrder();
+}
+
+// Function to load saved order
+function loadSavedOrder() {
+    const itemsList = document.getElementById('items-list');
+    const items = Array.from(itemsList.children);
+
+    items.sort((a, b) => a.getAttribute('data-order') - b.getAttribute('data-order'));
+
+    items.forEach(item => itemsList.appendChild(item));
+}
+
+// Call the function to load saved order when the page is loaded
+document.addEventListener('DOMContentLoaded', loadSavedOrder);
 
         // Function to update the assigned quadrant
         function updateAssignedQuadrant(itemId, priority) {
@@ -414,6 +419,43 @@ document.addEventListener('DOMContentLoaded', loadSavedPositions);
                 alert('An unexpected error occurred while updating the task priority.');
             });
         }
+
+        // Function to load saved positions and priorities
+        function loadSavedPositions() {
+            const items = document.querySelectorAll('.task-item');
+            items.forEach(item => {
+                const itemId = item.getAttribute('data-id');
+                const positionX = item.getAttribute('data-position-x');
+                const positionY = item.getAttribute('data-position-y');
+                const priority = item.getAttribute('data-priority');
+
+                if (positionX && positionY && priority) {
+                    const quadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+                    const clone = document.createElement('div');
+                    clone.classList.add('item-clone');
+                    clone.setAttribute('draggable', 'true');
+                    clone.setAttribute('data-id', itemId);
+                    clone.setAttribute('data-clone-id', itemId);
+                    clone.style.left = `${positionX}px`;
+                    clone.style.top = `${positionY}px`;
+                    clone.innerHTML = `<strong>${item.querySelector('strong').innerText}</strong>`;
+
+                    // Add drag and drop event listeners to the clone
+                    clone.addEventListener('dragstart', function(e) {
+                        e.dataTransfer.setData("text/plain", e.target.innerText);
+                        clone.classList.add('dragging');
+                    });
+                    clone.addEventListener('dragend', function() {
+                        clone.classList.remove('dragging');
+                    });
+
+                    quadrant.appendChild(clone);
+                }
+            });
+        }
+
+        // Call the function to load saved positions when the page is loaded
+        document.addEventListener('DOMContentLoaded', loadSavedPositions);
     </script>
 </body>
 </html>
