@@ -12,11 +12,20 @@ class ItemList(models.Model):
         return self.name
 
 class Item(models.Model):
-    title = models.CharField(max_length=200, default='default_title')  # Replace 'default_title' with your desired default
+    PRIORITY_CHOICES = [
+        ('doFirst', 'Do First'),
+        ('schedule', 'Schedule'),
+        ('delegate', 'Delegate'),
+        ('eliminate', 'Eliminate')
+    ]
+
+    title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     deadline = models.DateTimeField(blank=True, null=True)
     item_list = models.ForeignKey(ItemList, on_delete=models.CASCADE)
     completed = models.BooleanField(default=False)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='doFirst')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title

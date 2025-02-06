@@ -294,3 +294,21 @@ def delete_selected_lists_view(request):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+@login_required
+def update_priority_view(request, item_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            priority = data.get('priority')
+            if priority is None:
+                return JsonResponse({'success': False, 'error': 'Priority is required'})
+            item = Item.objects.get(id=item_id, item_list__user=request.user)
+            item.priority = priority
+            item.save()
+            return JsonResponse({'success': True})
+        except Item.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item not found'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
