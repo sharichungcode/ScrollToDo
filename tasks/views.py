@@ -65,10 +65,16 @@ def dashboard_view(request):
         request.user.profile.default_lists_created = True
         request.user.profile.save()
     
-    items = Item.objects.filter(item_list__user=request.user)
-    item_lists_exist = ItemList.objects.filter(user=request.user).exists()
-    empty_state = not item_lists_exist and not items.exists()
-    return render(request, 'tasks/dashboard.html', {'items': items, 'empty_state': empty_state})
+    items = Item.objects.filter(user=request.user)
+    item_lists = ItemList.objects.filter(user=request.user)  # Include all item lists
+    empty_state = not items.exists() and not item_lists.exists()
+
+    context = {
+        'items': items,
+        'item_lists': item_lists,
+        'empty_state': empty_state,
+    }
+    return render(request, 'tasks/dashboard.html', context)
 
 @login_required
 def account_view(request):
