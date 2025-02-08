@@ -24,7 +24,7 @@
         </div>
 
         <div class="mt-4">
-            <h3 class="fw-bold">Priority Quadrants</h3>
+            <h3 class="fw-bold">Priority Matrix</h3>
             <div class="row">
                 <div class="col-12 position-relative border-left border-bottom border-3 border-dark p-3">
                     <i class="fas fa-caret-up position-absolute" style="top: -5px; left: -5px;"></i>
@@ -71,14 +71,16 @@
 
         <div class="mt-4">
             <h3 class="fw-bold">Items</h3>
-            <form id="bulk-add-item-form" class="mb-3">
+            <form id="bulk-add-item-form" class="d-flex flex-column flex-md-row mb-3">
                 <textarea id="bulk-item-titles" class="form-control mb-2" placeholder="Paste items here, one per line" rows="3"></textarea>
                 <button type="submit" class="btn btn-primary">Add Items</button>
             </form>
-            <form id="add-item-form" class="d-flex mb-3">
-                <input type="text" id="new-item-title" class="form-control me-2" placeholder="New item title" required>
-                <input type="date" id="new-item-deadline" class="form-control me-2" placeholder="Deadline" optional>
-                <button type="submit" class="btn btn-primary">Add Item</button>
+            <form id="add-item-form" class="d-flex flex-column flex-md-row mb-3">
+                <div class="d-flex flex-column flex-md-row w-100">
+                    <input type="text" id="new-item-title" class="form-control mb-2 mb-md-0 me-md-2" placeholder="New item title" required="">
+                    <input type="date" id="new-item-deadline" class="form-control mb-2 mb-md-0 me-md-2" placeholder="Deadline" optional="">
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </div>
             </form>
             <div class="btn-group mb-3" role="group" aria-label="Sorting options">
                 <button type="button" class="btn btn-secondary" onclick="sortItems('deadline')">Sort by Deadline</button>
@@ -88,18 +90,25 @@
             <button type="button" class="btn btn-danger mb-3" onclick="deleteSelectedItems()">Delete Selected Items</button>
             <div class="list-group" id="items-list">
                 {% for item in items %}
-<div class="list-group-item d-flex justify-content-between align-items-center task-item border rounded p-2 mb-2 bg-light" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
+<div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
     <div>
         <input type="checkbox" class="select-item me-2">
         <strong>{{ item.title }}</strong> <br>
-        <small class="text-muted">Deadline: {{ item.deadline }}</small>
+        <small>Deadline: {{ item.deadline }}</small>
         <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
     </div>
-    <div>
-        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
-        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
-        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
+    <div class="d-flex flex-column flex-md-row mx-3">
+        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
+        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
+        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
         <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
+    </div>
+    <!-- Button to Remove Item Clone -->
+<button class="btn btn-outline-danger btn-sm" onclick="removeItemClone('{{ item.id }}')">Remove from Matrix</button>
+    <div class="position-absolute" style="right: 0; top: 0;">
+        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="{{ item.id }}" data-title="{{ item.title }}" data-description="{{ item.description }}" data-deadline="{{ item.deadline }}">
+            <i class="fas fa-edit"></i>
+        </button>
     </div>
 </div>
                 {% endfor %}
@@ -506,11 +515,18 @@
                             <small class="text-muted">Deadline: ${deadline ? deadline : 'None'}</small>
                             <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
                         </div>
-                        <div>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
+                        <div class="d-flex flex-column flex-md-row mx-3">
+                            <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
+                            <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
+                            <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
                             <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
+                        </div>
+                        <!-- Button to Remove Item Clone -->
+                        <button class="btn btn-outline-danger btn-sm" onclick="removeItemClone('${data.item.id}')">Remove from Matrix</button>
+                        <div class="position-absolute" style="right: 0; top: 0;">
+                            <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${data.item.id}" data-title="${title}" data-description="${data.item.description}" data-deadline="${deadline}">
+                                <i class="fas fa-edit"></i>
+                            </button>
                         </div>
                     `;
                     document.getElementById('items-list').appendChild(newItem);
@@ -585,6 +601,16 @@
                 alert('An unexpected error occurred while adding the items.');
             });
         });
+
+        function removeItemClone(itemId) {
+    // Find the item-clone element by its data-id attribute
+    var itemClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+    if (itemClone) {
+        itemClone.remove();
+    } else {
+        console.error(`Item clone with ID ${itemId} not found.`);
+    }
+}
     </script>
 </body>
 </html>
