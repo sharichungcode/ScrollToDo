@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScrollToDo - Dashboard</title>
+    {% load static %}
+    <link href="{% static 'tasks/styles.css' %}" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <!-- Navigation Bar -->
+    {% include 'tasks/navbar.html' %}
+
+    <div class="container mt-5">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold mb-3 mb-md-0">Dashboard</h2>
+            <div class="d-flex flex-column flex-md-row">
+                {% if items or request.user.itemlist_set.exists %}
+                <button class="btn btn-primary mb-2 mb-md-0 mx-md-2" data-bs-toggle="modal" data-bs-target="#addTaskModal"><i class="fas fa-plus"></i> Add Item</button>
+                <button class="btn btn-outline-secondary mb-2 mb-md-0 mx-md-2" data-bs-toggle="modal" data-bs-target="#addTaskListModal"><i class="fas fa-folder-plus"></i> Add Item List</button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Display Success and Error Messages -->
+        <div id="messages"></div>
+
+        <!-- Display Item Lists -->
+        {% if not empty_state %}
+        <section class="my-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold">Your Item Lists</h3>
+            <!-- Bulk Action Toolbar -->
+            <div id="bulkActionToolbar" class="d-none d-flex justify-content-end flex-wrap">
+                <button class="btn btn-danger mb-md-0 mx-md-2 d-none" id="deleteSelectedListsBtn" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal" disabled>
+                    <i class="fas fa-trash-alt"></i> Delete Selected Lists
+                </button>
+            </div>
+        </div>
+            <div class="row g-3">
+                {% for item_list in request.user.itemlist_set.all %}
+                <div class="my-2 col-md-6">
+                    <div class="p-3 border rounded bg-white shadow-sm d-flex justify-content-between align-items-center">
+                        <div class="form-check d-flex justify-content-between align-items-center">
+                            <input class="form-check-input" type="checkbox" value="{{ item_list.id }}" id="itemListCheckbox{{ item_list.id }}" style="transform: scale(1.5);">
+                        </div>
+                        <a href="{% url 'item_list_detail' list_id=item_list.id %}" class="text-decoration-none w-100">
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <div class="px-3 w-100">
+                                    <h5 class="fw-bold">{{ item_list.name }}</h5>
+                                    <small class="text-muted">{{ item_list.item_set.count }} items remaining</small>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar bg-success" style="width: {{ item_list.progress|default:'0' }}%;"></div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right fs-4 text-muted"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+        {% endif %}
+    </div>
+
+    <!-- Display Success and Error Messages -->
+    <div id="messages"></div>
+    
+    <!-- Empty State for No Items or Item Lists -->
+    {% if empty_state %}
+    <div class="container text-center mt-5">
+        <img src="{% get_media_prefix %}item_none.png" alt="No Items" class="img-fluid mb-3" style="max-width: 200px;">
+        <h4 class="fw-bold">No Items or Item Lists Found</h4>
+        <p class="text-muted">You haven't created any items or item lists yet. Start by creating a new item or item list.</p>
+        <a href="{% url 'create_item' %}" class="btn btn-primary btn-lg mt-3">Create New Item</a>
+        <a href="{% url 'create_item_list' %}" class="btn btn-secondary btn-lg mt-3">Create New Item List</a>
+        <button class="btn btn-primary mb-2 mb-md-0 mx-md-2" data-bs-toggle="modal" data-bs-target="#addTaskModal"><i class="fas fa-plus"></i> Add Item</button>
+        <button class="btn btn-outline-secondary mb-2 mb-md-0 mx-md-2" data-bs-toggle="modal" data-bs-target="#addTaskListModal"><i class="fas fa-folder-plus"></i> Add Item List</button>
+    {% endif %}
+</div>
+
+<!-- Add New Item Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskModalLabel">Add New Item</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="addItemTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="single-item-tab" data-bs-toggle="tab" href="#single-item" role="tab" aria-controls="single-item" aria-selected="true">Single Item</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="bulk-item-tab" data-bs-toggle="tab" href="#bulk-item" role="tab" aria-controls="bulk-item" aria-selected="false">Bulk Items</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="addItemTabContent">
+                    <div class="tab-pane fade show active" id="single-item" role="tabpanel" aria-labelledby="single-item-tab">
+                        <form id="addTaskForm" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="title">Item Title</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                                <div class="invalid-feedback">
+                                    Please provide an item title.
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="description">Item Description</label>
+                                <textarea class="form-control" id="description" name="description"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="deadline">Deadline</label>
+                                <input type="datetime-local" class="form-control" id="deadline" name="deadline">
+                            </div>
+                            <div class="form-group">
+                                <label for="item_list">Assign to List</label>
+                                <select class="form-control" id="item_list" name="item_list" required>
+                                    <option value="">Select an item list</option>
+                                    {% for item_list in request.user.itemlist_set.all %}
+                                        <option value="{{ item_list.id }}">{{ item_list.name }}</option>
+                                    {% endfor %}
+                                    <option value="new">+ New List</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select an item list.
+                                </div>
+                            </div>
+                            <div class="form-group" id="new_list_group" style="display: none;">
+                                <label for="new_list_name">New List Name</label>
+                                <input type="text" class="form-control" id="new_list_name" name="new_list_name" minlength="3">
+                                <div class="invalid-feedback">
+                                    New list name is required and must be at least 3 characters long.
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block mt-4">Create Item</button>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="bulk-item" role="tabpanel" aria-labelledby="bulk-item-tab">
+                        <form id="bulk-add-item-form" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            <textarea id="bulk-item-titles" class="form-control mb-2" placeholder="Paste items here, one per line" rows="3"></textarea>
+                            <div class="form-group">
+                                <label for="bulk_item_list">Assign to List</label>
+                                <select class="form-control" id="bulk_item_list" name="bulk_item_list" required>
+                                    <option value="">Select an item list</option>
+                                    {% for item_list in request.user.itemlist_set.all %}
+                                        <option value="{{ item_list.id }}">{{ item_list.name }}</option>
+                                    {% endfor %}
+                                    <option value="new">+ New List</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select an item list.
+                                </div>
+                            </div>
+                            <div class="form-group" id="bulk_new_list_group" style="display: none;">
+                                <label for="bulk_new_list_name">New List Name</label>
+                                <input type="text" class="form-control" id="bulk_new_list_name" name="bulk_new_list_name" minlength="3">
+                                <div class="invalid-feedback">
+                                    New list name is required and must be at least 3 characters long.
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block mt-4">Add Items</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Add New Item List Modal -->
+    <div class="modal fade" id="addTaskListModal" tabindex="-1" aria-labelledby="addTaskListModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTaskListModalLabel">Add New Item List</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTaskListForm" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="name">List Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <div class="invalid-feedback">
+                                Please provide a list name.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="deadline">List Deadline (Optional)</label>
+                            <input type="datetime-local" class="form-control" id="deadline" name="deadline">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block mt-4">Create Item List</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete the selected lists? All items inside will be removed as well.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% include 'tasks/footer.html' %}
+
+    <!-- Bootstrap JavaScript and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Form validation and dynamic behavior script -->
+    <script>
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+        // Handle add new item list form submission
+        document.getElementById('addTaskListForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            if (this.checkValidity() === false) {
+                event.stopPropagation();
+                this.classList.add('was-validated');
+                return;
+            }
+
+            var listName = document.getElementById('name').value;
+            var deadline = document.getElementById('deadline').value;
+
+            // Format the deadline value
+            if (deadline) {
+                var date = new Date(deadline);
+                deadline = date.toISOString().slice(0, 19).replace('T', ' ');
+            }
+
+            fetch('{% url "create_item_list" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    'name': listName,
+                    'deadline': deadline
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('addTaskListModal'));
+                    modal.hide();
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('An unexpected error occurred while creating the item list.');
+            });
+        });
+
+                // Enable delete button if any list is selected
+        document.querySelectorAll('.form-check-input').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                var selectedLists = document.querySelectorAll('.form-check-input:checked');
+                document.getElementById('confirmDeleteBtn').disabled = selectedLists.length === 0;
+                document.getElementById('deleteSelectedListsBtn').disabled = selectedLists.length === 0;
+                document.getElementById('deleteSelectedListsBtn').classList.toggle('d-none', selectedLists.length === 0);
+                document.getElementById('bulkActionToolbar').classList.toggle('d-none', selectedLists.length === 0);
+            });
+        });
+
+        // Handle delete selected lists button click
+        document.getElementById('deleteSelectedListsBtn').addEventListener('click', function() {
+            var selectedLists = [];
+            document.querySelectorAll('.form-check-input:checked').forEach(function(checkbox) {
+                selectedLists.push(checkbox.value);
+            });
+
+            if (selectedLists.length > 0) {
+                var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                deleteModal.show();
+                document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                    // Send fetch request to delete selected lists
+                    fetch('{% url "delete_selected_lists" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            'selected_lists': selectedLists
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            deleteModal.hide();
+                            location.reload(); // Reload the page to reflect changes
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        alert('An unexpected error occurred while deleting the lists.');
+                    });
+                });
+            } else {
+                alert('No lists selected.');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+        // Handle new list selection for single item form
+        document.getElementById('item_list').addEventListener('change', function() {
+            var newListGroup = document.getElementById('new_list_group');
+            if (this.value === 'new') {
+                newListGroup.style.display = 'block';
+                document.getElementById('new_list_name').required = true;
+            } else {
+                newListGroup.style.display = 'none';
+                document.getElementById('new_list_name').required = false;
+            }
+        });
+
+        // Handle new list selection for bulk item form
+        document.getElementById('bulk_item_list').addEventListener('change', function() {
+            var bulkNewListGroup = document.getElementById('bulk_new_list_group');
+            if (this.value === 'new') {
+                bulkNewListGroup.style.display = 'block';
+                document.getElementById('bulk_new_list_name').required = true;
+            } else {
+                bulkNewListGroup.style.display = 'none';
+                document.getElementById('bulk_new_list_name').required = false;
+            }
+        });
+
+        // Function to add multiple items
+        document.getElementById('bulk-add-item-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const titles = document.getElementById('bulk-item-titles').value.split('\n').filter(title => title.trim() !== '');
+            const itemListId = document.getElementById('bulk_item_list').value;
+            const newListName = document.getElementById('bulk_new_list_name').value;
+
+            fetch('/create_items/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    'titles': titles,
+                    'item_list': itemListId,
+                    'new_list_name': newListName
+                })
+            })
+            .then(response => {
+                console.log('Response:', response); // Log the response
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data:', data); // Log the data
+                if (data.success) {
+                    const itemsList = document.getElementById('items-list');
+                    if (itemsList) {
+                        data.items.forEach(item => {
+                            const newItem = document.createElement('div');
+                            newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
+                            newItem.setAttribute('draggable', 'true');
+                            newItem.setAttribute('data-id', item.id);
+                            newItem.setAttribute('data-position-x', '');
+                            newItem.setAttribute('data-position-y', '');
+                            newItem.setAttribute('data-priority', '');
+                            newItem.setAttribute('data-order', '');
+                            newItem.setAttribute('data-deadline', '');
+                            newItem.innerHTML = `
+                                <div>
+                                    <input type="checkbox" class="select-item me-2">
+                                    <strong>${item.title}</strong> <br>
+                                    <small class="text-muted">Deadline: None</small>
+                                    <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
+                                </div>
+                                <div>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
+                                </div>
+                            `;
+                            itemsList.appendChild(newItem);
+                        });
+                        document.getElementById('bulk-add-item-form').reset();
+                    } else {
+                        console.error('Element with ID "items-list" not found.');
+                    }
+
+                    // Close the modal
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('addTaskModal'));
+                    modal.hide();
+
+                    // Reload the page to reflect changes
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('An unexpected error occurred while adding the items.');
+            });
+        });
+    });
+
+        
+
+        document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("addTaskForm");
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();  // Stop normal form submission
+        // Get CSRF Token for security
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        // Gather form data
+        let formData = {
+            title: document.getElementById("title").value,
+            description: document.getElementById("description").value,
+            deadline: document.getElementById("deadline").value || null,
+            item_list: document.getElementById("item_list").value,
+            new_list_name: document.getElementById("new_list_name").value.trim()
+        };
+        // Ensure valid input
+        if (!formData.title) {
+            alert("Please enter a title.");
+            return;
+        }
+        if (formData.item_list === "new" && !formData.new_list_name) {
+            alert("Please enter a new list name.");
+            return;
+        }
+        // Send AJAX request to create item
+        fetch("{% url 'create_item' %}", {
+            method: "POST",
+            body: JSON.stringify(formData),
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById("addTaskModal"));
+                modal.hide();
+                // Reload dashboard content dynamically
+                location.reload();
+            } else {
+                alert("Error: " + data.error);
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+    // Show/hide new list input field dynamically
+    document.getElementById("item_list").addEventListener("change", function () {
+        const newListGroup = document.getElementById("new_list_group");
+        if (this.value === "new") {
+            newListGroup.style.display = "block";
+            document.getElementById("new_list_name").required = true;
+        } else {
+            newListGroup.style.display = "none";
+            document.getElementById("new_list_name").required = false;
+        }
+    });
+});
+    </script>
+</body>
+</html>
