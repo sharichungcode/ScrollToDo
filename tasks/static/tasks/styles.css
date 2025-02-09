@@ -78,10 +78,12 @@ header {
 .quadrant h4 {
     margin-bottom: 10px;
 }
+.list-group-item{
+    padding: 0 !important;
+}
 .task-item, .item-clone {
     border: 1px solid #ccc;
     border-radius: 5px;
-    padding: 5px;
     margin-bottom: 5px;
     background-color: #f8f9fa;
     cursor: move;
@@ -92,6 +94,7 @@ header {
 .item-clone {
     position: absolute;
     max-width: 120px;
+    padding: .25rem;
 }
 .task-item.dragging, .item-clone.dragging {
     opacity: 0.5;
