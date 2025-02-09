@@ -6,7 +6,7 @@
     <title>ScrollToDo - Organize, Prioritize, and Conquer</title>
     {% load static %}
     <link href="{% static 'tasks/styles.css' %}" rel="stylesheet">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -26,11 +26,12 @@
         <div class="mt-4">
             <h3 class="fw-bold">Priority Matrix</h3>
             <div class="row">
-                <div class="col-12 position-relative border-left border-bottom border-3 border-dark p-3">
-                    <i class="fas fa-caret-up position-absolute" style="top: -5px; left: -5px;"></i>
-                    <p class="position-absolute" style="top: -.6rem; left: 1rem;">Impact</p>
-                    <i class="fas fa-caret-right position-absolute" style="bottom: -8px; right: -5px;"></i>
-                    <p class="position-absolute" style="bottom: -2.5rem; right: 0;">Effort</p>
+                <div class="p-2 p-md-3">
+                <div class="col-12 position-relative border-start border-bottom border-3 border-primary p-2 p-md-3">
+                    <i class="fas fa-caret-up position-absolute fs-3 text-primary" style="top: -.5rem; left: -.6rem;"></i>
+                    <p class="position-absolute text-primary" style="top: -1rem; left: .5rem;">Impact</p>
+                    <i class="fas fa-caret-right position-absolute fs-3 text-primary" style="bottom: -.9rem; right: -.5rem;"></i>
+                    <p class="position-absolute text-primary" style="bottom: -2.6rem; right: .25rem;">Effort</p>
                     <div class="row m-0">
                         <div class="col-6 m-0 p-0">
                             <div class="quadrant border m-0 p-3 position-relative overflow-hidden" id="doFirst">
@@ -67,20 +68,31 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
 
         <div class="mt-4">
             <h3 class="fw-bold">Items</h3>
 
             <!-- Item Sorting and Actions -->
-            <div class="d-flex flex-column flex-md-row mb-3">
-                <div class="btn-group mb-2 mb-md-0" role="group" aria-label="Sorting options">
-                    <button type="button" class="btn btn-secondary" onclick="sortItems('deadline')">Sort by Deadline</button>
-                    <button type="button" class="btn btn-secondary" onclick="sortItems('priority')">Sort by Priority</button>
-                    <button type="button" class="btn btn-secondary" onclick="sortItems('alphabet')">Sort by Alphabet</button>
+            <div class="d-flex mb-2">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Sort Items
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                        <li><a class="dropdown-item" href="#" onclick="sortItems('deadline')">Sort by Deadline</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="sortItems('priority')">Sort by Priority</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="sortItems('alphabet')">Sort by Alphabet</a></li>
+                    </ul>
                 </div>
-                <div class="ml-md-auto">
-                    <button type="button" class="btn btn-danger mb-md-0 me-md-2" onclick="deleteSelectedItems()">Delete Selected Items</button>
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-danger mb-md-0 me-md-2" onclick="deleteSelectedItems()">
+                        <i class="fas fa-trash-alt"></i> 
+                        <span class="d-none d-md-inline">Delete Selected</span>
+                        <span class="d-inline d-md-none">Delete</span>
+                    </button>
+                    
                     <!-- Button to trigger the Add New Item Modal -->
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNewItemModal">
                         <i class="fas fa-plus"></i> Add Item
@@ -89,34 +101,36 @@
             </div>
             <div class="list-group" id="items-list">
                 {% for item in items %}
-                <div class="list-group-item d-flex justify-content-between align-items-center task-item p-2" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
-                    <div>
+                <div class="list-group-item d-flex justify-content-between align-items-center task-item p-2 p-md-3 border border-secondary rounded mb-2 bg-light cursor-move d-inline-block small" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
+                    <div class="w-100 me-2 align-self-start">
                         <input type="checkbox" class="select-item me-2" value="{{ item.id }}">
-                        <strong>{{ item.title }}</strong> <br>
+                        <strong>{{ item.title }}</strong> 
+                        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="{{ item.id }}" data-title="{{ item.title }}" data-description="{{ item.description }}" data-deadline="{{ item.deadline }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <br>
                         <small>Deadline: {{ item.deadline }}</small>
                         <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
                     </div>
-                    <div class="mx-5">
-                        <div class="d-flex flex-column flex-md-row mb-2" style="height: 4.25rem;">
-                            <div class="d-flex flex-wrap">
-                                <button class="btn btn-outline-secondary btn-sm m-0" style="flex: 0 0 48%; border-radius: 0;" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
-                                <button class="btn btn-outline-secondary btn-sm m-0" style="flex: 0 0 48%; border-radius: 0;" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
-                                <button class="btn btn-outline-secondary btn-sm m-0" style="flex: 0 0 48%; border-radius: 0;" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
-                                <button class="btn btn-outline-secondary btn-sm m-0" style="flex: 0 0 48%; border-radius: 0;" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
+                    <div>
+                        <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
+                            <div class="d-flex flex-wrap ms-auto">
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
                             </div>
                         </div>
-                        <div class="ms-auto">
+                        <div class="d-flex ms-auto justify-content-end">
                             <!-- Button to Remove Item Clone -->
-                            <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-auto" onclick="removeItemClone('{{ item.id }}')">
+                            <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('{{ item.id }}')">
                                 <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
                             </button>
                         </div>
                     </div>
     
                     <div class="position-absolute" style="right: 0; top: 0;">
-                        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="{{ item.id }}" data-title="{{ item.title }}" data-description="{{ item.description }}" data-deadline="{{ item.deadline }}">
-                            <i class="fas fa-edit"></i>
-                        </button>
+                        
                     </div>
                 </div>
                 {% endfor %}
@@ -130,7 +144,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="addNewItemModalLabel">Add New Item</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <!-- Nav tabs -->
@@ -181,6 +195,46 @@
         const itemsList = document.getElementById("items-list");
         let placeholder = document.createElement("div");
         placeholder.className = "placeholder";
+
+        quadrants.forEach(quadrant => {
+        quadrant.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            quadrant.classList.add("border-dark");
+        });
+
+        quadrant.addEventListener("dragleave", () => {
+            quadrant.classList.remove("border-dark");
+        });
+
+        quadrant.addEventListener("drop", (e) => {
+            e.preventDefault();
+            quadrant.classList.remove("border-dark");
+
+            const draggedTask = document.querySelector(`.item-clone.dragging`);
+            const priority = quadrant.querySelector('.task-list').getAttribute('data-priority');
+            
+            if (draggedTask) {
+                draggedTask.classList.remove("dragging");
+                const rect = quadrant.getBoundingClientRect();
+                const xPx = e.clientX - rect.left;
+                const yPx = e.clientY - rect.top;
+                const xPercent = convertPxToPercent(xPx, rect.width);
+                const yPercent = convertPxToPercent(yPx, rect.height);
+                draggedTask.style.left = `${xPercent}%`;
+                draggedTask.style.top = `${yPercent}%`;
+                draggedTask.setAttribute('data-position-x', xPercent);
+                draggedTask.setAttribute('data-position-y', yPercent);
+                quadrant.querySelector('.task-list').appendChild(draggedTask);
+                savePosition(draggedTask.getAttribute('data-id'), xPercent, yPercent, priority);
+                updateAssignedQuadrant(draggedTask.getAttribute('data-id'), priority);
+            }
+        });
+    });
+
+    function convertPxToPercent(positionPx, containerSizePx) {
+        return (positionPx / containerSizePx) * 100;
+    }
+
 
         tasks.forEach(task => {
             task.addEventListener("dragstart", (e) => {
@@ -283,36 +337,28 @@
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
-        // Function to save position and priority
+        // Function to save item position
         function savePosition(itemId, positionX, positionY, priority) {
-            console.log(`Saving position for item ${itemId}: x=${positionX}, y=${positionY}, priority=${priority}`);
             fetch(`/update-position/${itemId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    'position_x': positionX,
-                    'position_y': positionY,
-                    'priority': priority
-                })
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'position_x': positionX,
+                'position_y': positionY,
+                'priority': priority
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
             })
+            .then(response => response.json())
             .then(data => {
-                if (!data.success) {
-                    console.error('Error:', data.error);
-                    alert('Error: ' + data.error);
-                }
+            if (!data.success) {
+                alert('Error: ' + data.error);
+            }
             })
             .catch(error => {
-                console.error('Unexpected error:', error);
-                alert('An unexpected error occurred while saving the position.');
+            alert('An unexpected error occurred while saving the item position.');
             });
         }
 
@@ -320,40 +366,195 @@
         function loadSavedPositions() {
             const items = document.querySelectorAll('.task-item');
             items.forEach(item => {
-                const itemId = item.getAttribute('data-id');
-                const positionX = item.getAttribute('data-position-x');
-                const positionY = item.getAttribute('data-position-y');
-                const priority = item.getAttribute('data-priority');
+            const itemId = item.getAttribute('data-id');
+            const positionX = item.getAttribute('data-position-x');
+            const positionY = item.getAttribute('data-position-y');
+            const priority = item.getAttribute('data-priority');
 
-                if (positionX && positionY && priority) {
-                    const quadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
-                    const clone = document.createElement('div');
-                    clone.classList.add('item-clone');
-                    clone.setAttribute('draggable', 'true');
-                    clone.setAttribute('data-id', itemId);
-                    clone.setAttribute('data-position-x', positionX);
-                    clone.setAttribute('data-position-y', positionY);
-                    clone.setAttribute('data-priority', priority);
-                    clone.style.left = `${positionX}px`;
-                    clone.style.top = `${positionY}px`;
-                    clone.innerHTML = `<strong>${item.querySelector('strong').innerText}</strong>`;
+            if (positionX && positionY && priority) {
+                const quadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+                const clone = document.createElement('div');
+                clone.classList.add('item-clone');
+                clone.setAttribute('draggable', 'true');
+                clone.setAttribute('data-id', itemId);
+                clone.setAttribute('data-position-x', positionX);
+                clone.setAttribute('data-position-y', positionY);
+                clone.setAttribute('data-priority', priority);
+                clone.style.left = `${positionX}%`;
+                clone.style.top = `${positionY}%`;
+                clone.style.transform = 'translate(-50%, -50%)';
+                clone.innerHTML = `<strong>${item.querySelector('strong').innerText}</strong>`;
 
-                    // Add drag and drop event listeners to the clone
-                    clone.addEventListener('dragstart', function(e) {
-                        e.dataTransfer.setData("text/plain", e.target.innerText);
-                        clone.classList.add('dragging');
-                    });
-                    clone.addEventListener('dragend', function() {
-                        clone.classList.remove('dragging');
-                    });
+                // Add drag and drop event listeners to the clone
+                clone.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData("text/plain", e.target.innerText);
+                clone.classList.add('dragging');
+                });
+                clone.addEventListener('dragend', function() {
+                clone.classList.remove('dragging');
+                });
 
-                    quadrant.appendChild(clone);
-                }
+                quadrant.appendChild(clone);
+            }
             });
         }
 
         // Call the function to load saved positions when the page is loaded
         document.addEventListener('DOMContentLoaded', loadSavedPositions);
+
+        // Function to load saved order
+        function loadSavedOrder() {
+            const itemsList = document.getElementById('items-list');
+            const items = Array.from(itemsList.children);
+
+            items.sort((a, b) => a.getAttribute('data-order') - b.getAttribute('data-order'));
+
+            items.forEach(item => itemsList.appendChild(item));
+        }
+
+        // Call the functions to load saved positions and order when the page is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSavedPositions();
+            loadSavedOrder();
+        });
+
+        // Function to add a new item
+        document.getElementById('add-item-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('new-item-title').value;
+            const deadline = document.getElementById('new-item-deadline').value || null;
+
+            fetch('/create_item/', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+            'title': title,
+            'deadline': deadline,
+            'item_list': {{ item_list.id }}
+            })
+            })
+            .then(response => {
+            if (!response.ok) {
+            throw new Error('Network response was not ok');
+            }
+            return response.json();
+            })
+            .then(data => {
+            if (data.success) {
+            const newItem = document.createElement('div');
+            newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item', 'p-2', 'p-md-3', 'border', 'border-secondary', 'rounded', 'mb-2', 'bg-light', 'cursor-move', 'd-inline-block', 'small');
+            newItem.setAttribute('draggable', 'true');
+            newItem.setAttribute('data-id', data.item.id);
+            newItem.setAttribute('data-position-x', '');
+            newItem.setAttribute('data-position-y', '');
+            newItem.setAttribute('data-priority', '');
+            newItem.setAttribute('data-order', '');
+            newItem.setAttribute('data-deadline', deadline);
+            newItem.innerHTML = `
+            <div class="w-100 me-2 align-self-start">
+            <input type="checkbox" class="select-item me-2" value="${data.item.id}">
+            <strong>${title}</strong>
+            <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${data.item.id}" data-title="${title}" data-description="" data-deadline="${deadline}">
+            <i class="fas fa-edit"></i>
+            </button>
+            <br>
+            <small>Deadline: ${deadline ? deadline : 'None'}</small>
+            <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
+            </div>
+            <div>
+            <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
+            <div class="d-flex flex-wrap ms-auto">
+                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
+                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
+                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
+                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
+            </div>
+            </div>
+            <div class="d-flex ms-auto justify-content-end">
+            <!-- Button to Remove Item Clone -->
+            <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${data.item.id}')">
+                <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
+            </button>
+            </div>
+            </div>
+            `;
+            document.getElementById('items-list').appendChild(newItem);
+            document.getElementById('add-item-form').reset();
+            $('#addNewItemModal').modal('hide');
+            } else {
+            alert('Error: ' + data.error);
+            }
+            })
+            .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('An unexpected error occurred while adding the item.');
+            });
+        });
+
+        // Function to add multiple items
+        document.getElementById('bulk-add-item-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const titles = document.getElementById('bulk-item-titles').value.split('\n').filter(title => title.trim() !== '');
+
+            fetch('/create_items/', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+            'titles': titles,
+            'item_list': {{ item_list.id }}
+            })
+            })
+            .then(response => {
+            if (!response.ok) {
+            throw new Error('Network response was not ok');
+            }
+            return response.json();
+            })
+            .then(data => {
+            if (data.success) {
+            data.items.forEach(item => {
+            const newItem = document.createElement('div');
+            newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
+            newItem.setAttribute('draggable', 'true');
+            newItem.setAttribute('data-id', item.id);
+            newItem.setAttribute('data-position-x', '');
+            newItem.setAttribute('data-position-y', '');
+            newItem.setAttribute('data-priority', '');
+            newItem.setAttribute('data-order', '');
+            newItem.setAttribute('data-deadline', '');
+            newItem.innerHTML = `
+            <div>
+            <input type="checkbox" class="select-item me-2">
+            <strong>${item.title}</strong> <br>
+            <small class="text-muted">Deadline: None</small>
+            <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
+            </div>
+            <div>
+            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
+            </div>
+            `;
+            document.getElementById('items-list').appendChild(newItem);
+            });
+            document.getElementById('bulk-add-item-form').reset();
+            $('#addNewItemModal').modal('hide');
+            } else {
+            alert('Error: ' + data.error);
+            }
+            })
+            .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('An unexpected error occurred while adding the items.');
+            });
+        });
 
         // Function to sort items
         function sortItems(criteria) {
@@ -464,7 +665,7 @@
         function updateAssignedQuadrant(itemId, priority) {
             const assignedQuadrantElement = document.getElementById(`assigned-quadrant-${itemId}`);
             if (assignedQuadrantElement) {
-                assignedQuadrantElement.innerText = `Assigned to: ${priority}`;
+            assignedQuadrantElement.innerText = `Assigned to: ${priority}`;
             }
         }
 
@@ -498,9 +699,12 @@
                 simpleTaskItem.classList.add('item-clone');
                 simpleTaskItem.setAttribute('draggable', 'true');
                 simpleTaskItem.setAttribute('data-id', itemId);
-                simpleTaskItem.setAttribute('data-position-x', '');
-                simpleTaskItem.setAttribute('data-position-y', '');
+                simpleTaskItem.setAttribute('data-position-x', '50');
+                simpleTaskItem.setAttribute('data-position-y', '50');
                 simpleTaskItem.setAttribute('data-priority', priority);
+                simpleTaskItem.style.left = '50%';
+                simpleTaskItem.style.top = '50%';
+                simpleTaskItem.style.transform = 'translate(-50%, -50%)';
                 simpleTaskItem.innerHTML = `<strong>${taskItem.querySelector('strong').innerText}</strong>`;
                 
                 // Add drag and drop event listeners to the simple task item
@@ -517,6 +721,9 @@
 
                 // Mark the original task item with the selected quadrant
                 document.getElementById(`assigned-quadrant-${itemId}`).innerText = `Assigned to: ${priority}`;
+
+                // Save the position and priority
+                savePosition(itemId, 50, 50, priority);
             } else {
                 alert('Error: ' + data.error);
             }
@@ -701,6 +908,123 @@
             console.error(`Item clone with ID ${itemId} not found.`);
             }
         }
+
+        // Function to handle drag and drop
+    function handleDragAndDrop() {
+        const tasks = document.querySelectorAll(".task-item, .item-clone");
+        const quadrants = document.querySelectorAll(".quadrant");
+        const itemsList = document.getElementById("items-list");
+        let placeholder = document.createElement("div");
+        placeholder.className = "placeholder";
+
+        tasks.forEach(task => {
+            task.addEventListener("dragstart", (e) => {
+                e.dataTransfer.setData("text/plain", e.target.innerText);
+                task.classList.add("dragging");
+            });
+
+            task.addEventListener("dragend", () => {
+                task.classList.remove("dragging");
+                placeholder.remove();
+            });
+
+            // Set initial position if available
+            if (task.classList.contains('item-clone')) {
+                const positionX = task.getAttribute('data-position-x');
+                const positionY = task.getAttribute('data-position-y');
+                if (positionX && positionY) {
+                    task.style.left = `${positionX}%`;
+                    task.style.top = `${positionY}%`;
+                }
+            }
+        });
+
+        quadrants.forEach(quadrant => {
+            quadrant.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                quadrant.classList.add("border-dark");
+            });
+
+            quadrant.addEventListener("dragleave", () => {
+                quadrant.classList.remove("border-dark");
+            });
+
+            quadrant.addEventListener("drop", (e) => {
+                e.preventDefault();
+                quadrant.classList.remove("border-dark");
+
+                const draggedTask = document.querySelector(`.item-clone.dragging`);
+                const priority = quadrant.querySelector('.task-list').getAttribute('data-priority');
+                
+                if (draggedTask) {
+                    draggedTask.classList.remove("dragging");
+                    const rect = quadrant.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const parentWidth = quadrant.offsetWidth;
+                    const parentHeight = quadrant.offsetHeight;
+                    const leftPercent = (x / parentWidth) * 100;
+                    const topPercent = (y / parentHeight) * 100;
+                    draggedTask.style.left = `${leftPercent}%`;
+                    draggedTask.style.top = `${topPercent}%`;
+                    draggedTask.setAttribute('data-position-x', leftPercent);
+                    draggedTask.setAttribute('data-position-y', topPercent);
+                    quadrant.querySelector('.task-list').appendChild(draggedTask);
+                    savePosition(draggedTask.getAttribute('data-id'), leftPercent, topPercent, priority);
+                    updateAssignedQuadrant(draggedTask.getAttribute('data-id'), priority);
+                }
+            });
+        });
+
+        itemsList.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            itemsList.classList.add("border-dark");
+
+            const draggingItem = document.querySelector(".task-item.dragging");
+            const afterElement = getDragAfterElement(itemsList, e.clientY);
+            if (afterElement == null) {
+                itemsList.appendChild(placeholder);
+            } else {
+                itemsList.insertBefore(placeholder, afterElement);
+            }
+        });
+
+        itemsList.addEventListener("dragleave", () => {
+            itemsList.classList.remove("border-dark");
+            placeholder.remove();
+        });
+
+        itemsList.addEventListener("drop", (e) => {
+            e.preventDefault();
+            itemsList.classList.remove("border-dark");
+
+            const draggedTask = document.querySelector(`.task-item.dragging`);
+            
+            if (draggedTask) {
+                draggedTask.classList.remove("dragging");
+                itemsList.insertBefore(draggedTask, placeholder);
+                placeholder.remove();
+                saveOrder();
+            }
+        });
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll(".task-item:not(.dragging)")];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+    }
+
+    // Call the function to handle drag and drop when the page is loaded
+    document.addEventListener('DOMContentLoaded', handleDragAndDrop);
     </script>
 </body>
 </html>

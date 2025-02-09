@@ -83,18 +83,18 @@ header {
 }
 .task-item, .item-clone {
     border: 1px solid var(--medium-gray);
-    border-radius: 5px;
-    margin-bottom: 5px;
-    background-color: rgba(248, 249, 250, 0.8);
-    cursor: move;
-    display: inline-block;
-    font-size: 12px;
     width: auto;
 }
 .item-clone {
     position: absolute;
     max-width: 120px;
     padding: .25rem;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    background-color: rgba(248, 249, 250, 0.8);
+    cursor: move;
+    display: inline-block;
+    font-size: 12px;
 }
 .task-item.dragging, .item-clone.dragging {
     opacity: 0.5;
