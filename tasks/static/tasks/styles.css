@@ -91,6 +91,7 @@ header {
 }
 .item-clone {
     position: absolute;
+    max-width: 120px;
 }
 .task-item.dragging, .item-clone.dragging {
     opacity: 0.5;

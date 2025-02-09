@@ -71,10 +71,49 @@
 
         <div class="mt-4">
             <h3 class="fw-bold">Items</h3>
-            <!-- Button to trigger the Add New Item Modal -->
-<button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addNewItemModal">
-    <i class="fas fa-plus"></i> Add New Item
-</button>
+
+            <!-- Item Sorting and Actions -->
+            <div class="d-flex flex-column flex-md-row mb-3">
+                <div class="btn-group mb-2 mb-md-0" role="group" aria-label="Sorting options">
+                    <button type="button" class="btn btn-secondary" onclick="sortItems('deadline')">Sort by Deadline</button>
+                    <button type="button" class="btn btn-secondary" onclick="sortItems('priority')">Sort by Priority</button>
+                    <button type="button" class="btn btn-secondary" onclick="sortItems('alphabet')">Sort by Alphabet</button>
+                </div>
+                <div class="ml-md-auto">
+                    <button type="button" class="btn btn-danger mb-md-0 me-md-2" onclick="deleteSelectedItems()">Delete Selected Items</button>
+                    <!-- Button to trigger the Add New Item Modal -->
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNewItemModal">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </div>
+            </div>
+            <div class="list-group" id="items-list">
+                {% for item in items %}
+                <div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
+                    <div>
+                        <input type="checkbox" class="select-item me-2" value="{{ item.id }}">
+                        <strong>{{ item.title }}</strong> <br>
+                        <small>Deadline: {{ item.deadline }}</small>
+                        <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row mx-3">
+                        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
+                        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
+                        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
+                    </div>
+    <!-- Button to Remove Item Clone -->
+<button class="btn btn-outline-danger btn-sm" onclick="removeItemClone('{{ item.id }}')">Remove from Matrix</button>
+    <div class="position-absolute" style="right: 0; top: 0;">
+        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="{{ item.id }}" data-title="{{ item.title }}" data-description="{{ item.description }}" data-deadline="{{ item.deadline }}">
+            <i class="fas fa-edit"></i>
+        </button>
+    </div>
+</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
 <!-- Add New Item Modal -->
 <div class="modal fade" id="addNewItemModal" tabindex="-1" aria-labelledby="addNewItemModalLabel" aria-hidden="true">
@@ -118,42 +157,6 @@
         </div>
     </div>
 </div>
-
-            
-            <!-- Item Sorting -->
-            <div class="btn-group mb-3" role="group" aria-label="Sorting options">
-                <button type="button" class="btn btn-secondary" onclick="sortItems('deadline')">Sort by Deadline</button>
-                <button type="button" class="btn btn-secondary" onclick="sortItems('priority')">Sort by Priority</button>
-                <button type="button" class="btn btn-secondary" onclick="sortItems('alphabet')">Sort by Alphabet</button>
-            </div>
-            <button type="button" class="btn btn-danger mb-3" onclick="deleteSelectedItems()">Delete Selected Items</button>
-            <div class="list-group" id="items-list">
-                {% for item in items %}
-                <div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
-                    <div>
-                        <input type="checkbox" class="select-item me-2" value="{{ item.id }}">
-                        <strong>{{ item.title }}</strong> <br>
-                        <small>Deadline: {{ item.deadline }}</small>
-                        <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
-                    </div>
-                    <div class="d-flex flex-column flex-md-row mx-3">
-                        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
-                        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
-                        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
-                    </div>
-    <!-- Button to Remove Item Clone -->
-<button class="btn btn-outline-danger btn-sm" onclick="removeItemClone('{{ item.id }}')">Remove from Matrix</button>
-    <div class="position-absolute" style="right: 0; top: 0;">
-        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="{{ item.id }}" data-title="{{ item.title }}" data-description="{{ item.description }}" data-deadline="{{ item.deadline }}">
-            <i class="fas fa-edit"></i>
-        </button>
-    </div>
-</div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
 
     <!-- Footer -->
     {% include 'tasks/footer.html' %}
