@@ -39,6 +39,8 @@ urlpatterns = [
     path('delete_items/', views.delete_items, name='delete_items'),
     path('update-priority/<int:item_id>/', views.update_priority_view, name='update_priority'),
     path('update-position/<int:item_id>/', views.update_position_view, name='update_position'),
+    path('update-in-matrix/<int:item_id>/', views.update_in_matrix, name='update_in_matrix'),
+    path('remove-item-clone/<int:item_id>/', views.remove_item_clone, name='remove_item_clone'),
 ]
 
 if settings.DEBUG:

@@ -89,8 +89,8 @@
             </div>
             <div class="list-group" id="items-list">
                 {% for item in items %}
-                <div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
-                    <div class="p-2">
+                <div class="list-group-item d-flex justify-content-between align-items-center task-item p-2" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
+                    <div>
                         <input type="checkbox" class="select-item me-2" value="{{ item.id }}">
                         <strong>{{ item.title }}</strong> <br>
                         <small>Deadline: {{ item.deadline }}</small>
@@ -575,7 +575,7 @@
                 newItem.setAttribute('data-order', '');
                 newItem.setAttribute('data-deadline', deadline);
                 newItem.innerHTML = `
-                <div class="p-2">
+                <div>
                     <input type="checkbox" class="select-item me-2">
                     <strong>${title}</strong> <br>
                     <small class="text-muted">Deadline: ${deadline ? deadline : 'None'}</small>
@@ -636,7 +636,7 @@
                 newItem.setAttribute('data-order', '');
                 newItem.setAttribute('data-deadline', '');
                 newItem.innerHTML = `
-                    <div class="p-2">
+                    <div>
                     <input type="checkbox" class="select-item me-2">
                     <strong>${item.title}</strong> <br>
                     <small class="text-muted">Deadline: None</small>
@@ -667,9 +667,38 @@
             // Find the item-clone element by its data-id attribute
             var itemClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
             if (itemClone) {
-                itemClone.remove();
+            itemClone.remove();
+            // Send a request to the server to update the item's position to null
+            fetch(`/remove-item-clone/${itemId}/`, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                'position_x': null,
+                'position_y': null,
+                'priority': null
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                console.error('Error:', data.error);
+                alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('An unexpected error occurred while removing the item clone.');
+            });
             } else {
-                console.error(`Item clone with ID ${itemId} not found.`);
+            console.error(`Item clone with ID ${itemId} not found.`);
             }
         }
     </script>

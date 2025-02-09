@@ -73,7 +73,7 @@ header {
     transition: background-color 0.3s ease;
 }
 .quadrant.dragover {
-    background-color: #f0f0f0;
+    background-color: var(--light-gray);
 }
 .quadrant h4 {
     margin-bottom: 10px;
@@ -82,10 +82,10 @@ header {
     padding: 0 !important;
 }
 .task-item, .item-clone {
-    border: 1px solid #ccc;
+    border: 1px solid var(--medium-gray);
     border-radius: 5px;
     margin-bottom: 5px;
-    background-color: #f8f9fa;
+    background-color: rgba(248, 249, 250, 0.8);
     cursor: move;
     display: inline-block;
     font-size: 12px;
@@ -100,5 +100,5 @@ header {
     opacity: 0.5;
 }
 .border-dark {
-    border-color: #000 !important;
+    border-color:  var(--dark-gray) !important;
 }

@@ -399,3 +399,37 @@ def delete_items(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+@login_required
+def update_in_matrix(request, item_id):
+    if request.method == 'POST':
+        try:
+            item = Item.objects.get(id=item_id, user=request.user)
+            data = json.loads(request.body)
+            item.in_matrix = data.get('in_matrix', item.in_matrix)
+            item.save()
+            return JsonResponse({'success': True})
+        except Item.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+@login_required
+def remove_item_clone(request, item_id):
+    if request.method == 'POST':
+        try:
+            item = Item.objects.get(id=item_id, user=request.user)
+            item.position_x = None
+            item.position_y = None
+            item.priority = None
+            item.in_matrix = False
+            item.save()
+            return JsonResponse({'success': True})
+        except Item.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)

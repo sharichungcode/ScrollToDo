@@ -29,6 +29,8 @@ class Item(models.Model):
     order = models.IntegerField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     item_list = models.ForeignKey('ItemList', on_delete=models.CASCADE)
+    completed = models.BooleanField(default=False)  # Store completion status
+    in_matrix = models.BooleanField(default=True)  # Store in_matrix status
 
     def __str__(self):
         return self.title
