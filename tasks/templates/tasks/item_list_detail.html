@@ -71,19 +71,56 @@
 
         <div class="mt-4">
             <h3 class="fw-bold">Items</h3>
-            <form id="bulk-add-item-form" class="d-flex flex-column flex-md-row mb-3">
-                <textarea id="bulk-item-titles" class="form-control mb-2" placeholder="Paste items here, one per line" rows="3"></textarea>
-                <button type="submit" class="btn btn-primary">Add Items</button>
-            </form>
-            <form id="add-item-form" class="d-flex flex-column flex-md-row mb-3">
-                <div class="d-flex flex-column mb-3 w-100">
-                    <div>
-                <input type="text" id="new-item-title" class="form-control mb-2" placeholder="New item title" required="">
-                <input type="date" id="new-item-deadline" class="form-control mb-2" placeholder="Deadline" optional="">
+            <!-- Button to trigger the Add New Item Modal -->
+<button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addNewItemModal">
+    <i class="fas fa-plus"></i> Add New Item
+</button>
+
+<!-- Add New Item Modal -->
+<div class="modal fade" id="addNewItemModal" tabindex="-1" aria-labelledby="addNewItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNewItemModalLabel">Add New Item</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
-                <button type="submit" class="btn btn-primary">Add Item</button>
+            <div class="modal-body">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" id="addItemTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="single-item-tab" data-bs-toggle="tab" data-bs-target="#single-item" type="button" role="tab" aria-controls="single-item" aria-selected="true">Single Item</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="bulk-items-tab" data-bs-toggle="tab" data-bs-target="#bulk-items" type="button" role="tab" aria-controls="bulk-items" aria-selected="false">Bulk Items</button>
+                    </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="single-item" role="tabpanel" aria-labelledby="single-item-tab">
+                        <form id="add-item-form" class="mt-3">
+                            <div class="input-group mb-3">
+                                <input type="text" id="new-item-title" class="form-control" placeholder="New item title" required>
+                                <input type="date" id="new-item-deadline" class="form-control" placeholder="Deadline">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Item</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="bulk-items" role="tabpanel" aria-labelledby="bulk-items-tab">
+                        <form id="bulk-add-item-form" class="mt-3">
+                            <div class="input-group mb-3">
+                                <textarea id="bulk-item-titles" class="form-control" placeholder="Paste items here, one per line" rows="3"></textarea>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Items</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            </form>
+        </div>
+    </div>
+</div>
+
+            
+            <!-- Item Sorting -->
             <div class="btn-group mb-3" role="group" aria-label="Sorting options">
                 <button type="button" class="btn btn-secondary" onclick="sortItems('deadline')">Sort by Deadline</button>
                 <button type="button" class="btn btn-secondary" onclick="sortItems('priority')">Sort by Priority</button>
@@ -423,57 +460,57 @@
         function assignPriority(itemId, priority) {
             // Send fetch request to update the priority of the task
             fetch(`/update-priority/${itemId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    'priority': priority
-                })
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'priority': priority
+            })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    const taskItem = document.querySelector(`.task-item[data-id="${itemId}"]`);
-                    const targetQuadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
-                    
-                    // Remove any existing clone of the task item
-                    const existingClone = document.querySelector(`.item-clone[data-clone-id="${itemId}"]`);
-                    if (existingClone) {
-                        existingClone.remove();
-                    }
-
-                    // Create a simple version of the task item
-                    const simpleTaskItem = document.createElement('div');
-                    simpleTaskItem.classList.add('item-clone');
-                    simpleTaskItem.setAttribute('draggable', 'true');
-                    simpleTaskItem.setAttribute('data-id', itemId);
-                    simpleTaskItem.setAttribute('data-position-x', '');
-                    simpleTaskItem.setAttribute('data-position-y', '');
-                    simpleTaskItem.setAttribute('data-priority', priority);
-                    simpleTaskItem.innerHTML = `<strong>${taskItem.querySelector('strong').innerText}</strong>`;
-                    
-                    // Add drag and drop event listeners to the simple task item
-                    simpleTaskItem.addEventListener('dragstart', function(e) {
-                        e.dataTransfer.setData("text/plain", e.target.innerText);
-                        simpleTaskItem.classList.add('dragging');
-                    });
-                    simpleTaskItem.addEventListener('dragend', function() {
-                        simpleTaskItem.classList.remove('dragging');
-                    });
-
-                    // Append the simple task item to the target quadrant
-                    targetQuadrant.appendChild(simpleTaskItem);
-
-                    // Mark the original task item with the selected quadrant
-                    document.getElementById(`assigned-quadrant-${itemId}`).innerText = `Assigned to: ${priority}`;
-                } else {
-                    alert('Error: ' + data.error);
+            if (data.success) {
+                const taskItem = document.querySelector(`.task-item[data-id="${itemId}"]`);
+                const targetQuadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+                
+                // Remove any existing clone of the task item
+                const existingClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+                if (existingClone) {
+                existingClone.remove();
                 }
+
+                // Create a simple version of the task item
+                const simpleTaskItem = document.createElement('div');
+                simpleTaskItem.classList.add('item-clone');
+                simpleTaskItem.setAttribute('draggable', 'true');
+                simpleTaskItem.setAttribute('data-id', itemId);
+                simpleTaskItem.setAttribute('data-position-x', '');
+                simpleTaskItem.setAttribute('data-position-y', '');
+                simpleTaskItem.setAttribute('data-priority', priority);
+                simpleTaskItem.innerHTML = `<strong>${taskItem.querySelector('strong').innerText}</strong>`;
+                
+                // Add drag and drop event listeners to the simple task item
+                simpleTaskItem.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData("text/plain", e.target.innerText);
+                simpleTaskItem.classList.add('dragging');
+                });
+                simpleTaskItem.addEventListener('dragend', function() {
+                simpleTaskItem.classList.remove('dragging');
+                });
+
+                // Append the simple task item to the target quadrant
+                targetQuadrant.appendChild(simpleTaskItem);
+
+                // Mark the original task item with the selected quadrant
+                document.getElementById(`assigned-quadrant-${itemId}`).innerText = `Assigned to: ${priority}`;
+            } else {
+                alert('Error: ' + data.error);
+            }
             })
             .catch(error => {
-                alert('An unexpected error occurred while updating the task priority.');
+            alert('An unexpected error occurred while updating the task priority.');
             });
         }
 
@@ -497,57 +534,58 @@
             const deadline = document.getElementById('new-item-deadline').value || null;
 
             fetch('/create_item/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    'title': title,
-                    'deadline': deadline,
-                    'item_list': {{ item_list.id }}
-                })
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'title': title,
+                'deadline': deadline,
+                'item_list': {{ item_list.id }}
+            })
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
             })
             .then(data => {
-                if (data.success) {
-                    const newItem = document.createElement('div');
-                    newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
-                    newItem.setAttribute('draggable', 'true');
-                    newItem.setAttribute('data-id', data.item.id);
-                    newItem.setAttribute('data-position-x', '');
-                    newItem.setAttribute('data-position-y', '');
-                    newItem.setAttribute('data-priority', '');
-                    newItem.setAttribute('data-order', '');
-                    newItem.setAttribute('data-deadline', deadline);
-                    newItem.innerHTML = `
-                        <div>
-                            <input type="checkbox" class="select-item me-2">
-                            <strong>${title}</strong> <br>
-                            <small class="text-muted">Deadline: ${deadline ? deadline : 'None'}</small>
-                            <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
-                        </div>
-                        <div>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
-                        </div>
-                    `;
-                    document.getElementById('items-list').appendChild(newItem);
-                    document.getElementById('add-item-form').reset();
-                } else {
-                    alert('Error: ' + data.error);
-                }
+            if (data.success) {
+                const newItem = document.createElement('div');
+                newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
+                newItem.setAttribute('draggable', 'true');
+                newItem.setAttribute('data-id', data.item.id);
+                newItem.setAttribute('data-position-x', '');
+                newItem.setAttribute('data-position-y', '');
+                newItem.setAttribute('data-priority', '');
+                newItem.setAttribute('data-order', '');
+                newItem.setAttribute('data-deadline', deadline);
+                newItem.innerHTML = `
+                <div>
+                    <input type="checkbox" class="select-item me-2">
+                    <strong>${title}</strong> <br>
+                    <small class="text-muted">Deadline: ${deadline ? deadline : 'None'}</small>
+                    <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
+                </div>
+                <div>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
+                </div>
+                `;
+                document.getElementById('items-list').appendChild(newItem);
+                document.getElementById('add-item-form').reset();
+                $('#addNewItemModal').modal('hide');
+            } else {
+                alert('Error: ' + data.error);
+            }
             })
             .catch(error => {
-                console.error('Unexpected error:', error);
-                alert('An unexpected error occurred while adding the item.');
+            console.error('Unexpected error:', error);
+            alert('An unexpected error occurred while adding the item.');
             });
         });
 
@@ -557,58 +595,59 @@
             const titles = document.getElementById('bulk-item-titles').value.split('\n').filter(title => title.trim() !== '');
 
             fetch('/create_items/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    'titles': titles,
-                    'item_list': {{ item_list.id }}
-                })
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'titles': titles,
+                'item_list': {{ item_list.id }}
+            })
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
             })
             .then(data => {
-                if (data.success) {
-                    data.items.forEach(item => {
-                        const newItem = document.createElement('div');
-                        newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
-                        newItem.setAttribute('draggable', 'true');
-                        newItem.setAttribute('data-id', item.id);
-                        newItem.setAttribute('data-position-x', '');
-                        newItem.setAttribute('data-position-y', '');
-                        newItem.setAttribute('data-priority', '');
-                        newItem.setAttribute('data-order', '');
-                        newItem.setAttribute('data-deadline', '');
-                        newItem.innerHTML = `
-                            <div>
-                                <input type="checkbox" class="select-item me-2">
-                                <strong>${item.title}</strong> <br>
-                                <small class="text-muted">Deadline: None</small>
-                                <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
-                            </div>
-                            <div>
-                                <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
-                                <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
-                                <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
-                                <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
-                            </div>
-                        `;
-                        document.getElementById('items-list').appendChild(newItem);
-                    });
-                    document.getElementById('bulk-add-item-form').reset();
-                } else {
-                    alert('Error: ' + data.error);
-                }
+            if (data.success) {
+                data.items.forEach(item => {
+                const newItem = document.createElement('div');
+                newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
+                newItem.setAttribute('draggable', 'true');
+                newItem.setAttribute('data-id', item.id);
+                newItem.setAttribute('data-position-x', '');
+                newItem.setAttribute('data-position-y', '');
+                newItem.setAttribute('data-priority', '');
+                newItem.setAttribute('data-order', '');
+                newItem.setAttribute('data-deadline', '');
+                newItem.innerHTML = `
+                    <div>
+                    <input type="checkbox" class="select-item me-2">
+                    <strong>${item.title}</strong> <br>
+                    <small class="text-muted">Deadline: None</small>
+                    <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
+                    </div>
+                    <div>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
+                    </div>
+                `;
+                document.getElementById('items-list').appendChild(newItem);
+                });
+                document.getElementById('bulk-add-item-form').reset();
+                $('#addNewItemModal').modal('hide');
+            } else {
+                alert('Error: ' + data.error);
+            }
             })
             .catch(error => {
-                console.error('Unexpected error:', error);
-                alert('An unexpected error occurred while adding the items.');
+            console.error('Unexpected error:', error);
+            alert('An unexpected error occurred while adding the items.');
             });
         });
 

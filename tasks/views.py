@@ -332,23 +332,22 @@ def delete_selected_lists_view(request):
 
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
+@csrf_exempt
 @login_required
 def update_priority_view(request, item_id):
     if request.method == 'POST':
         try:
+            item = Item.objects.get(id=item_id, user=request.user)
             data = json.loads(request.body)
-            priority = data.get('priority')
-            if priority is None:
-                return JsonResponse({'success': False, 'error': 'Priority is required'})
-            item = Item.objects.get(id=item_id, item_list__user=request.user)
-            item.priority = priority
+            item.priority = data.get('priority', item.priority)
             item.save()
             return JsonResponse({'success': True})
         except Item.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Item not found'})
+            return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+    
 
 @login_required
 def update_position_view(request, item_id):
