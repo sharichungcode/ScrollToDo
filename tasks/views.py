@@ -386,3 +386,17 @@ def delete_item_view(request, item_id):
         except Item.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Item not found.'}, status=404)
     return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+
+@csrf_exempt
+@login_required
+def delete_items(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            item_ids = data.get('item_ids', [])
+            items = Item.objects.filter(id__in=item_ids, user=request.user)
+            items.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)

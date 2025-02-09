@@ -76,11 +76,13 @@
                 <button type="submit" class="btn btn-primary">Add Items</button>
             </form>
             <form id="add-item-form" class="d-flex flex-column flex-md-row mb-3">
-                <div class="d-flex flex-column flex-md-row w-100">
-                    <input type="text" id="new-item-title" class="form-control mb-2 mb-md-0 me-md-2" placeholder="New item title" required="">
-                    <input type="date" id="new-item-deadline" class="form-control mb-2 mb-md-0 me-md-2" placeholder="Deadline" optional="">
-                    <button type="submit" class="btn btn-primary">Add Item</button>
-                </div>
+                <div class="d-flex flex-column mb-3 w-100">
+                    <div>
+                <input type="text" id="new-item-title" class="form-control mb-2" placeholder="New item title" required="">
+                <input type="date" id="new-item-deadline" class="form-control mb-2" placeholder="Deadline" optional="">
+            </div>
+                <button type="submit" class="btn btn-primary">Add Item</button>
+            </div>
             </form>
             <div class="btn-group mb-3" role="group" aria-label="Sorting options">
                 <button type="button" class="btn btn-secondary" onclick="sortItems('deadline')">Sort by Deadline</button>
@@ -90,19 +92,19 @@
             <button type="button" class="btn btn-danger mb-3" onclick="deleteSelectedItems()">Delete Selected Items</button>
             <div class="list-group" id="items-list">
                 {% for item in items %}
-<div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
-    <div>
-        <input type="checkbox" class="select-item me-2">
-        <strong>{{ item.title }}</strong> <br>
-        <small>Deadline: {{ item.deadline }}</small>
-        <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
-    </div>
-    <div class="d-flex flex-column flex-md-row mx-3">
-        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
-        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
-        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
-        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
-    </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center task-item" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
+                    <div>
+                        <input type="checkbox" class="select-item me-2" value="{{ item.id }}">
+                        <strong>{{ item.title }}</strong> <br>
+                        <small>Deadline: {{ item.deadline }}</small>
+                        <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row mx-3">
+                        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
+                        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
+                        <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
+                    </div>
     <!-- Button to Remove Item Clone -->
 <button class="btn btn-outline-danger btn-sm" onclick="removeItemClone('{{ item.id }}')">Remove from Matrix</button>
     <div class="position-absolute" style="right: 0; top: 0;">
@@ -280,7 +282,9 @@
                     clone.classList.add('item-clone');
                     clone.setAttribute('draggable', 'true');
                     clone.setAttribute('data-id', itemId);
-                    clone.setAttribute('data-clone-id', itemId);
+                    clone.setAttribute('data-position-x', positionX);
+                    clone.setAttribute('data-position-y', positionY);
+                    clone.setAttribute('data-priority', priority);
                     clone.style.left = `${positionX}px`;
                     clone.style.top = `${positionY}px`;
                     clone.innerHTML = `<strong>${item.querySelector('strong').innerText}</strong>`;
@@ -365,34 +369,45 @@
         // Function to delete selected items
         function deleteSelectedItems() {
             const selectedItems = document.querySelectorAll('.select-item:checked');
-            selectedItems.forEach(item => {
-                const taskItem = item.closest('.task-item');
-                const itemId = taskItem.getAttribute('data-id');
-                fetch(`/delete-item/${itemId}/`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        taskItem.remove();
-                    } else {
-                        console.error('Error:', data.error);
-                        alert('Error: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Unexpected error:', error);
-                    alert('An unexpected error occurred while deleting the item.');
+            const itemIds = Array.from(selectedItems).map(item => item.value);
+
+            fetch('/delete_items/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'item_ids': itemIds
+            })
+            })
+            .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+            })
+            .then(data => {
+            if (data.success) {
+                // Remove the original items and their clones from the DOM
+                itemIds.forEach(itemId => {
+                const originalItem = document.querySelector(`.task-item[data-id="${itemId}"]`);
+                const itemClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+                if (originalItem) {
+                    originalItem.remove();
+                }
+                if (itemClone) {
+                    itemClone.remove();
+                }
                 });
+            } else {
+                console.error('Error:', data.error);
+                alert('Error: ' + data.error);
+            }
+            })
+            .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('An unexpected error occurred while deleting the items.');
             });
         }
 
@@ -434,7 +449,9 @@
                     simpleTaskItem.classList.add('item-clone');
                     simpleTaskItem.setAttribute('draggable', 'true');
                     simpleTaskItem.setAttribute('data-id', itemId);
-                    simpleTaskItem.setAttribute('data-clone-id', itemId);
+                    simpleTaskItem.setAttribute('data-position-x', '');
+                    simpleTaskItem.setAttribute('data-position-y', '');
+                    simpleTaskItem.setAttribute('data-priority', priority);
                     simpleTaskItem.innerHTML = `<strong>${taskItem.querySelector('strong').innerText}</strong>`;
                     
                     // Add drag and drop event listeners to the simple task item
@@ -515,18 +532,11 @@
                             <small class="text-muted">Deadline: ${deadline ? deadline : 'None'}</small>
                             <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
                         </div>
-                        <div class="d-flex flex-column flex-md-row mx-3">
-                            <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
-                            <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
-                            <button class="btn btn-outline-secondary btn-sm mb-2 mb-md-0 me-md-2" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
+                        <div>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
                             <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
-                        </div>
-                        <!-- Button to Remove Item Clone -->
-                        <button class="btn btn-outline-danger btn-sm" onclick="removeItemClone('${data.item.id}')">Remove from Matrix</button>
-                        <div class="position-absolute" style="right: 0; top: 0;">
-                            <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${data.item.id}" data-title="${title}" data-description="${data.item.description}" data-deadline="${deadline}">
-                                <i class="fas fa-edit"></i>
-                            </button>
                         </div>
                     `;
                     document.getElementById('items-list').appendChild(newItem);
@@ -603,14 +613,14 @@
         });
 
         function removeItemClone(itemId) {
-    // Find the item-clone element by its data-id attribute
-    var itemClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
-    if (itemClone) {
-        itemClone.remove();
-    } else {
-        console.error(`Item clone with ID ${itemId} not found.`);
-    }
-}
+            // Find the item-clone element by its data-id attribute
+            var itemClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+            if (itemClone) {
+                itemClone.remove();
+            } else {
+                console.error(`Item clone with ID ${itemId} not found.`);
+            }
+        }
     </script>
 </body>
 </html>
