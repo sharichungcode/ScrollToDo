@@ -310,8 +310,9 @@
         });
 
         // Handle delete selected lists button click
-        document.getElementById('deleteSelectedListsBtn').addEventListener('click', function() {
-            var selectedLists = [];
+        if (document.getElementById('deleteSelectedListsBtn')) {
+            document.getElementById('deleteSelectedListsBtn').addEventListener('click', function () {
+                var selectedLists = [];
             document.querySelectorAll('.form-check-input:checked').forEach(function(checkbox) {
                 selectedLists.push(checkbox.value);
             });
