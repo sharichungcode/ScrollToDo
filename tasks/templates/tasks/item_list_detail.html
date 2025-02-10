@@ -366,7 +366,39 @@
             })
             .then(response => response.json())
             .then(data => {
-            if (!data.success) {
+            if (data.success) {
+                // Remove the old item clone
+                const oldClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+                if (oldClone) {
+                oldClone.remove();
+                }
+
+                // Create a new item clone at the new position
+                const newClone = document.createElement('div');
+                newClone.classList.add('item-clone');
+                newClone.setAttribute('draggable', 'true');
+                newClone.setAttribute('data-id', itemId);
+                newClone.setAttribute('data-position-x', positionX);
+                newClone.setAttribute('data-position-y', positionY);
+                newClone.setAttribute('data-priority', priority);
+                newClone.style.left = `${positionX}%`;
+                newClone.style.top = `${positionY}%`;
+                newClone.style.transform = 'translate(-50%, -50%)';
+                newClone.innerHTML = `<strong>${document.querySelector(`.task-item[data-id="${itemId}"] strong`).innerText}</strong>`;
+
+                // Add drag and drop event listeners to the new item clone
+                newClone.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData("text/plain", e.target.innerText);
+                newClone.classList.add('dragging');
+                });
+                newClone.addEventListener('dragend', function() {
+                newClone.classList.remove('dragging');
+                });
+
+                // Append the new item clone to the target quadrant
+                const targetQuadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+                targetQuadrant.appendChild(newClone);
+            } else {
                 alert('Error: ' + data.error);
             }
             })
