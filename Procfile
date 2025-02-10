@@ -1,1 +1,1 @@
-web: gunicorn scroll-to-do.wsgi
+web: gunicorn scrolltodo.wsgi
