@@ -309,7 +309,7 @@
                 .then(data => {
                     if (data.success) {
                         var modal = bootstrap.Modal.getInstance(document.getElementById(
-                            'addTaskListModal'));
+                        'addTaskListModal'));
                         modal.hide();
                         location.reload(); // Reload the page to reflect changes
                     } else {
@@ -373,7 +373,9 @@
                 } else {
                     alert('No lists selected.');
                 }
+                
             });
+        }
 
             document.addEventListener('DOMContentLoaded', function () {
                 // Handle new list selection for single item form
@@ -546,7 +548,7 @@
                     }
                 });
             });
-    </script>
-</body>
-
-</html>
+        
+            </script>
+    </body>
+    </html>
