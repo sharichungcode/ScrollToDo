@@ -81,9 +81,9 @@
                         Sort Items
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="sortDropdown">
-                        <li><a class="dropdown-item" href="#" onclick="sortItems('deadline')">Sort by Deadline</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="sortItems('priority')">Sort by Priority</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="sortItems('alphabet')">Sort by Alphabet</a></li>
+                        <li><a class="dropdown-item" onclick="sortItems('deadline')">Sort by Deadline</a></li>
+                        <li><a class="dropdown-item" onclick="sortItems('priority')">Sort by Priority</a></li>
+                        <li><a class="dropdown-item" onclick="sortItems('alphabet')">Sort by Alphabet</a></li>
                     </ul>
                 </div>
                 <div class="ms-auto">
@@ -200,7 +200,7 @@
         placeholder.style.border = "2px dashed #ccc";
         placeholder.style.marginBottom = "10px";
         placeholder.style.borderRadius = "5px";
-        
+
         quadrants.forEach(quadrant => {
         quadrant.addEventListener("dragover", (e) => {
             e.preventDefault();
