@@ -195,7 +195,12 @@
         const itemsList = document.getElementById("items-list");
         let placeholder = document.createElement("div");
         placeholder.className = "placeholder";
-
+        placeholder.style.height = "50px";
+        placeholder.style.backgroundColor = "#f0f0f0";
+        placeholder.style.border = "2px dashed #ccc";
+        placeholder.style.marginBottom = "10px";
+        placeholder.style.borderRadius = "5px";
+        
         quadrants.forEach(quadrant => {
         quadrant.addEventListener("dragover", (e) => {
             e.preventDefault();
@@ -224,6 +229,14 @@
                 draggedTask.style.top = `${yPercent}%`;
                 draggedTask.setAttribute('data-position-x', xPercent);
                 draggedTask.setAttribute('data-position-y', yPercent);
+                draggedTask.setAttribute('data-priority', priority);
+
+                // Remove any existing clone of the task item in the new quadrant
+                const existingClone = document.querySelector(`.item-clone[data-id="${draggedTask.getAttribute('data-id')}"]`);
+                if (existingClone && existingClone !== draggedTask) {
+                    existingClone.remove();
+                }
+
                 quadrant.querySelector('.task-list').appendChild(draggedTask);
                 savePosition(draggedTask.getAttribute('data-id'), xPercent, yPercent, priority);
                 updateAssignedQuadrant(draggedTask.getAttribute('data-id'), priority);
@@ -416,144 +429,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadSavedPositions();
             loadSavedOrder();
-        });
-
-        // Function to add a new item
-        document.getElementById('add-item-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const title = document.getElementById('new-item-title').value;
-            const deadline = document.getElementById('new-item-deadline').value || null;
-
-            fetch('/create_item/', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-            'title': title,
-            'deadline': deadline,
-            'item_list': {{ item_list.id }}
-            })
-            })
-            .then(response => {
-            if (!response.ok) {
-            throw new Error('Network response was not ok');
-            }
-            return response.json();
-            })
-            .then(data => {
-            if (data.success) {
-            const newItem = document.createElement('div');
-            newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item', 'p-2', 'p-md-3', 'border', 'border-secondary', 'rounded', 'mb-2', 'bg-light', 'cursor-move', 'd-inline-block', 'small');
-            newItem.setAttribute('draggable', 'true');
-            newItem.setAttribute('data-id', data.item.id);
-            newItem.setAttribute('data-position-x', '');
-            newItem.setAttribute('data-position-y', '');
-            newItem.setAttribute('data-priority', '');
-            newItem.setAttribute('data-order', '');
-            newItem.setAttribute('data-deadline', deadline);
-            newItem.innerHTML = `
-            <div class="w-100 me-2 align-self-start">
-            <input type="checkbox" class="select-item me-2" value="${data.item.id}">
-            <strong>${title}</strong>
-            <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${data.item.id}" data-title="${title}" data-description="" data-deadline="${deadline}">
-            <i class="fas fa-edit"></i>
-            </button>
-            <br>
-            <small>Deadline: ${deadline ? deadline : 'None'}</small>
-            <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
-            </div>
-            <div>
-            <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
-            <div class="d-flex flex-wrap ms-auto">
-                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
-                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
-                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
-                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
-            </div>
-            </div>
-            <div class="d-flex ms-auto justify-content-end">
-            <!-- Button to Remove Item Clone -->
-            <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${data.item.id}')">
-                <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
-            </button>
-            </div>
-            </div>
-            `;
-            document.getElementById('items-list').appendChild(newItem);
-            document.getElementById('add-item-form').reset();
-            $('#addNewItemModal').modal('hide');
-            } else {
-            alert('Error: ' + data.error);
-            }
-            })
-            .catch(error => {
-            console.error('Unexpected error:', error);
-            alert('An unexpected error occurred while adding the item.');
-            });
-        });
-
-        // Function to add multiple items
-        document.getElementById('bulk-add-item-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const titles = document.getElementById('bulk-item-titles').value.split('\n').filter(title => title.trim() !== '');
-
-            fetch('/create_items/', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-            'titles': titles,
-            'item_list': {{ item_list.id }}
-            })
-            })
-            .then(response => {
-            if (!response.ok) {
-            throw new Error('Network response was not ok');
-            }
-            return response.json();
-            })
-            .then(data => {
-            if (data.success) {
-            data.items.forEach(item => {
-            const newItem = document.createElement('div');
-            newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
-            newItem.setAttribute('draggable', 'true');
-            newItem.setAttribute('data-id', item.id);
-            newItem.setAttribute('data-position-x', '');
-            newItem.setAttribute('data-position-y', '');
-            newItem.setAttribute('data-priority', '');
-            newItem.setAttribute('data-order', '');
-            newItem.setAttribute('data-deadline', '');
-            newItem.innerHTML = `
-            <div>
-            <input type="checkbox" class="select-item me-2">
-            <strong>${item.title}</strong> <br>
-            <small class="text-muted">Deadline: None</small>
-            <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
-            </div>
-            <div>
-            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
-            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
-            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
-            <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
-            </div>
-            `;
-            document.getElementById('items-list').appendChild(newItem);
-            });
-            document.getElementById('bulk-add-item-form').reset();
-            $('#addNewItemModal').modal('hide');
-            } else {
-            alert('Error: ' + data.error);
-            }
-            })
-            .catch(error => {
-            console.error('Unexpected error:', error);
-            alert('An unexpected error occurred while adding the items.');
-            });
         });
 
         // Function to sort items
@@ -755,68 +630,67 @@
             fetch('/create_item/', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
             },
             body: JSON.stringify({
-                'title': title,
-                'deadline': deadline,
-                'item_list': {{ item_list.id }}
+            'title': title,
+            'deadline': deadline,
+            'item_list': {{ item_list.id }}
             })
             })
             .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+            throw new Error('Network response was not ok');
             }
             return response.json();
             })
             .then(data => {
             if (data.success) {
-                const newItem = document.createElement('div');
-                newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
-                newItem.setAttribute('draggable', 'true');
-                newItem.setAttribute('data-id', data.item.id);
-                newItem.setAttribute('data-position-x', '');
-                newItem.setAttribute('data-position-y', '');
-                newItem.setAttribute('data-priority', '');
-                newItem.setAttribute('data-order', '');
-                newItem.setAttribute('data-deadline', deadline);
-                newItem.innerHTML = `
-                <div class="list-group-item d-flex justify-content-between align-items-center task-item p-2 p-md-3 border border-secondary rounded mb-2 bg-light cursor-move d-inline-block small" draggable="true" data-id="${data.item.id}" data-position-x="" data-position-y="" data-priority="" data-order="" data-deadline="${deadline}">
-                    <div class="w-100 me-2 align-self-start">
-                        <input type="checkbox" class="select-item me-2" value="${data.item.id}">
-                        <strong>${title}</strong> <br>
-                        <small>Deadline: ${deadline ? deadline : 'None'}</small>
-                        <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
-                    </div>
-                    <div>
-                        <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
-                            <div class="d-flex flex-wrap ms-auto">
-                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
-                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
-                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
-                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
-                            </div>
-                        </div>
-                        <div class="d-flex ms-auto justify-content-end">
-                            <!-- Button to Remove Item Clone -->
-                            <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${data.item.id}')">
-                                <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
-                            </button>
-                        </div>
-                    </div>
-                    <div class="position-absolute" style="right: 0; top: 0;">
-                        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${data.item.id}" data-title="${title}" data-description="" data-deadline="${deadline}">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </div>
+            const newItem = document.createElement('div');
+            newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item', 'p-2', 'p-md-3', 'border', 'border-secondary', 'rounded', 'mb-2', 'bg-light', 'cursor-move', 'd-inline-block', 'small');
+            newItem.setAttribute('draggable', 'true');
+            newItem.setAttribute('data-id', data.item.id);
+            newItem.setAttribute('data-position-x', '');
+            newItem.setAttribute('data-position-y', '');
+            newItem.setAttribute('data-priority', '');
+            newItem.setAttribute('data-order', '');
+            newItem.setAttribute('data-deadline', deadline);
+            newItem.innerHTML = `
+            <div class="w-100 me-2 align-self-start">
+                <input type="checkbox" class="select-item me-2" value="${data.item.id}">
+                <strong>${title}</strong> 
+                <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${data.item.id}" data-title="${title}" data-description="" data-deadline="${deadline}">
+                <i class="fas fa-edit"></i>
+                </button>
+                <br>
+                <small>Deadline: ${deadline ? deadline : 'None'}</small>
+                <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
+            </div>
+            <div>
+                <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
+                <div class="d-flex flex-wrap ms-auto">
+                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
+                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
+                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
+                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
                 </div>
-                `;
-                document.getElementById('items-list').appendChild(newItem);
-                document.getElementById('add-item-form').reset();
-                $('#addNewItemModal').modal('hide');
+                </div>
+                <div class="d-flex ms-auto justify-content-end">
+                <!-- Button to Remove Item Clone -->
+                <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${data.item.id}')">
+                    <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
+                </button>
+                </div>
+            </div>
+            <div class="position-absolute" style="right: 0; top: 0;">
+            </div>
+            `;
+            document.getElementById('items-list').appendChild(newItem);
+            document.getElementById('add-item-form').reset();
+            $('#addNewItemModal').modal('hide');
             } else {
-                alert('Error: ' + data.error);
+            alert('Error: ' + data.error);
             }
             })
             .catch(error => {
@@ -833,52 +707,68 @@
             fetch('/create_items/', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
             },
             body: JSON.stringify({
-                'titles': titles,
-                'item_list': {{ item_list.id }}
+            'titles': titles,
+            'item_list': {{ item_list.id }}
             })
             })
             .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+            throw new Error('Network response was not ok');
             }
             return response.json();
             })
             .then(data => {
             if (data.success) {
-                data.items.forEach(item => {
-                const newItem = document.createElement('div');
-                newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
-                newItem.setAttribute('draggable', 'true');
-                newItem.setAttribute('data-id', item.id);
-                newItem.setAttribute('data-position-x', '');
-                newItem.setAttribute('data-position-y', '');
-                newItem.setAttribute('data-priority', '');
-                newItem.setAttribute('data-order', '');
-                newItem.setAttribute('data-deadline', '');
-                newItem.innerHTML = `
-                    <div>
-                    <input type="checkbox" class="select-item me-2">
-                    <strong>${item.title}</strong> <br>
-                    <small class="text-muted">Deadline: None</small>
-                    <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
+            data.items.forEach(item => {
+            const newItem = document.createElement('div');
+            newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item', 'p-2', 'p-md-3', 'border', 'border-secondary', 'rounded', 'mb-2', 'bg-light', 'cursor-move', 'd-inline-block', 'small');
+            newItem.setAttribute('draggable', 'true');
+            newItem.setAttribute('data-id', item.id);
+            newItem.setAttribute('data-position-x', '');
+            newItem.setAttribute('data-position-y', '');
+            newItem.setAttribute('data-priority', '');
+            newItem.setAttribute('data-order', '');
+            newItem.setAttribute('data-deadline', '');
+            newItem.innerHTML = `
+                <div class="w-100 me-2 align-self-start">
+                <input type="checkbox" class="select-item me-2" value="${item.id}">
+                <strong>${item.title}</strong> 
+                <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${item.id}" data-title="${item.title}" data-description="" data-deadline="">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <br>
+                <small>Deadline: None</small>
+                <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
+                </div>
+                <div>
+                <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
+                    <div class="d-flex flex-wrap ms-auto">
+                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
+                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
+                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
+                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
                     </div>
-                    <div>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
-                    </div>
-                `;
-                document.getElementById('items-list').appendChild(newItem);
-                });
-                document.getElementById('bulk-add-item-form').reset();
-                $('#addNewItemModal').modal('hide');
+                </div>
+                <div class="d-flex ms-auto justify-content-end">
+                    <!-- Button to Remove Item Clone -->
+                    <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${item.id}')">
+                    <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
+                    </button>
+                </div>
+                </div>
+                <div class="position-absolute" style="right: 0; top: 0;">
+                </div>
+            `;
+            document.getElementById('items-list').appendChild(newItem);
+            });
+            document.getElementById('bulk-add-item-form').reset();
+            $('#addNewItemModal').modal('hide');
             } else {
-                alert('Error: ' + data.error);
+            alert('Error: ' + data.error);
             }
             })
             .catch(error => {
@@ -928,11 +818,6 @@
 
         // Function to handle drag and drop
     function handleDragAndDrop() {
-        const tasks = document.querySelectorAll(".task-item, .item-clone");
-        const quadrants = document.querySelectorAll(".quadrant");
-        const itemsList = document.getElementById("items-list");
-        let placeholder = document.createElement("div");
-        placeholder.className = "placeholder";
 
         tasks.forEach(task => {
             task.addEventListener("dragstart", (e) => {
@@ -956,6 +841,7 @@
             }
         });
 
+        
         quadrants.forEach(quadrant => {
             quadrant.addEventListener("dragover", (e) => {
                 e.preventDefault();
@@ -976,18 +862,24 @@
                 if (draggedTask) {
                     draggedTask.classList.remove("dragging");
                     const rect = quadrant.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const parentWidth = quadrant.offsetWidth;
-                    const parentHeight = quadrant.offsetHeight;
-                    const leftPercent = (x / parentWidth) * 100;
-                    const topPercent = (y / parentHeight) * 100;
-                    draggedTask.style.left = `${leftPercent}%`;
-                    draggedTask.style.top = `${topPercent}%`;
-                    draggedTask.setAttribute('data-position-x', leftPercent);
-                    draggedTask.setAttribute('data-position-y', topPercent);
+                    const xPx = e.clientX - rect.left;
+                    const yPx = e.clientY - rect.top;
+                    const xPercent = convertPxToPercent(xPx, rect.width);
+                    const yPercent = convertPxToPercent(yPx, rect.height);
+                    draggedTask.style.left = `${xPercent}%`;
+                    draggedTask.style.top = `${yPercent}%`;
+                    draggedTask.setAttribute('data-position-x', xPercent);
+                    draggedTask.setAttribute('data-position-y', yPercent);
+                    draggedTask.setAttribute('data-priority', priority);
+
+                    // Remove any existing clone of the task item in the new quadrant
+                    const existingClone = document.querySelector(`.item-clone[data-id="${draggedTask.getAttribute('data-id')}"]`);
+                    if (existingClone && existingClone !== draggedTask) {
+                        existingClone.remove();
+                    }
+
                     quadrant.querySelector('.task-list').appendChild(draggedTask);
-                    savePosition(draggedTask.getAttribute('data-id'), leftPercent, topPercent, priority);
+                    savePosition(draggedTask.getAttribute('data-id'), xPercent, yPercent, priority);
                     updateAssignedQuadrant(draggedTask.getAttribute('data-id'), priority);
                 }
             });
