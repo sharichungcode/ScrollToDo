@@ -115,10 +115,10 @@
                     <div>
                         <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
                             <div class="d-flex flex-wrap ms-auto">
-                                <button class="btn {% if item.priority == 'doFirst' %}btn-secondary{% else %}btn-outline-secondary{% endif %} btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
-                                <button class="btn {% if item.priority == 'schedule' %}btn-secondary{% else %}btn-outline-secondary{% endif %} btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
-                                <button class="btn {% if item.priority == 'delegate' %}btn-secondary{% else %}btn-outline-secondary{% endif %} btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
-                                <button class="btn {% if item.priority == 'eliminate' %}btn-secondary{% else %}btn-outline-secondary{% endif %} btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
                             </div>
                         </div>
                         <div class="d-flex ms-auto justify-content-end">
@@ -597,9 +597,6 @@
                 // Mark the original task item with the selected quadrant
                 document.getElementById(`assigned-quadrant-${itemId}`).innerText = `Assigned to: ${priority}`;
 
-                // Update button classes
-                updateButtonClasses(taskItem, priority);
-
                 // Save the position and priority
                 savePosition(itemId, 50, 50, priority);
             } else {
@@ -610,21 +607,6 @@
             alert('An unexpected error occurred while updating the task priority.');
             });
         }
-
-        function updateButtonClasses(taskItem, priority) {
-    const buttons = taskItem.querySelectorAll('button');
-    buttons.forEach(button => {
-        if (button.innerText.includes('Do First')) {
-            button.className = priority === 'doFirst' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-        } else if (button.innerText.includes('Schedule')) {
-            button.className = priority === 'schedule' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-        } else if (button.innerText.includes('Delegate')) {
-            button.className = priority === 'delegate' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-        } else if (button.innerText.includes('Eliminate')) {
-            button.className = priority === 'eliminate' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-        }
-    });
-}
 
         // Function to load saved order
         function loadSavedOrder() {

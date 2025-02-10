@@ -1,0 +1,18 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'index' %}{% endif %}">
+            <img src="{% get_media_prefix %}Logo.svg" alt="Logo" style="height: 30px; margin-right: 8px;">
+            <span style="font-weight: bold; color: var(--dark-gray);">ScrollToDo</span>
+        </a>
+        <div class="justify-content-end" id="navbarNav">
+            {% if user.is_authenticated %}
+            <a href="{% url 'account' %}" class="btn btn-outline-primary d-flex align-items-center">
+                Hi,<div style="max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; margin-left: 5px;">{{ user.username }}</div>&nbsp;→
+            </a>
+            {% else %}
+                <a href="#" data-toggle="modal" data-target="#authModal" class="btn btn-outline-primary">Sign In</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>

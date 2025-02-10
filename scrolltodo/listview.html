@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task List - ScrollToDo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <div class="container mt-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Task List</li>
+            </ol>
+        </nav>
+
+        <!-- Task List Header -->
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold">Work Tasks</h2>
+            <button class="btn btn-primary">+ Add Task</button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress my-3">
+            <div class="progress-bar bg-success" style="width: 50%;">50% Completed</div>
+        </div>
+
+        <!-- View Toggle & Sorting Controls -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <label for="sortTasks" class="me-2">Sort by:</label>
+                <select id="sortTasks" class="form-select d-inline-block w-auto">
+                    <option value="due-date">Due Date</option>
+                    <option value="priority">Priority</option>
+                    <option value="status">Status</option>
+                    <option value="newest">Newest First</option>
+                </select>
+            </div>
+            <div class="d-flex justify-content-end my-3">
+                <button id="listViewBtn" class="btn btn-outline-primary me-2">List View</button>
+                <button id="matrixViewBtn" class="btn btn-outline-primary">Priority Matrix View</button>
+            </div>
+        </div>
+
+        <!-- Pending Tasks Section -->
+        <div id="listView">
+            <h5 class="fw-bold mb-3">🔄 To-Do</h5>
+            <div class="list-group mb-4">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <input type="checkbox" class="form-check-input me-2">
+                        <span class="fw-bold">Prepare slides for presentation</span>
+                        <small class="text-muted d-block">Deadline: Feb 1</small>
+                        <p class="mb-0 text-secondary">Create slides with key points and visuals.</p>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <input type="checkbox" class="form-check-input me-2">
+                        <span class="fw-bold">Reply to urgent client emails</span>
+                        <small class="text-muted d-block">Deadline: Today</small>
+                        <p class="mb-0 text-secondary">Respond to pending queries from clients.</p>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                </div>
+            </div>
+
+            <!-- Completed Tasks Section -->
+            <h5 class="fw-bold text-success">✅ Completed</h5>
+            <div class="list-group">
+                <div class="list-group-item d-flex align-items-center text-muted">
+                    <input type="checkbox" class="form-check-input me-2" checked>
+                    <span class="fw-bold text-decoration-line-through">Organize workspace</span>
+                </div>
+                <div class="list-group-item d-flex align-items-center text-muted">
+                    <input type="checkbox" class="form-check-input me-2" checked>
+                    <span class="fw-bold text-decoration-line-through">Schedule team meeting</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Priority Matrix Section (Hidden Initially) -->
+        <div id="matrixView" class="d-none">
+            <h5 class="fw-bold mb-3">📊 Priority Matrix</h5>
+            <div class="border p-3 bg-white rounded shadow-sm">
+                <div class="row">
+                    <div class="col-md-6 border p-3">
+                        <h6 class="text-danger fw-bold">🔴 Do First (Urgent & Important)</h6>
+                        <ul class="list-unstyled">
+                            <li>Reply to urgent client emails</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 border p-3">
+                        <h6 class="text-primary fw-bold">🔵 Schedule (Important but Not Urgent)</h6>
+                        <ul class="list-unstyled">
+                            <li>Prepare slides for presentation</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 border p-3">
+                        <h6 class="text-warning fw-bold">🟡 Delegate (Urgent but Not Important)</h6>
+                        <ul class="list-unstyled">
+                            <li>Schedule team meeting</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 border p-3">
+                        <h6 class="text-secondary fw-bold">⚪ Eliminate (Neither Urgent nor Important)</h6>
+                        <ul class="list-unstyled">
+                            <li>Organize workspace</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById('listViewBtn').addEventListener('click', function() {
+            document.getElementById('listView').classList.remove('d-none');
+            document.getElementById('matrixView').classList.add('d-none');
+            this.classList.add('active');
+            document.getElementById('matrixViewBtn').classList.remove('active');
+        });
+
+        document.getElementById('matrixViewBtn').addEventListener('click', function() {
+            document.getElementById('listView').classList.add('d-none');
+            document.getElementById('matrixView').classList.remove('d-none');
+            this.classList.add('active');
+            document.getElementById('listViewBtn').classList.remove('active');
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

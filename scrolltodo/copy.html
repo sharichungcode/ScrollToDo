@@ -81,9 +81,9 @@
                         Sort Items
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="sortDropdown">
-                        <li><a class="dropdown-item" onclick="sortItems('deadline')">Sort by Deadline</a></li>
-                        <li><a class="dropdown-item" onclick="sortItems('priority')">Sort by Priority</a></li>
-                        <li><a class="dropdown-item" onclick="sortItems('alphabet')">Sort by Alphabet</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="sortItems('deadline')">Sort by Deadline</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="sortItems('priority')">Sort by Priority</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="sortItems('alphabet')">Sort by Alphabet</a></li>
                     </ul>
                 </div>
                 <div class="ms-auto">
@@ -115,10 +115,10 @@
                     <div>
                         <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
                             <div class="d-flex flex-wrap ms-auto">
-                                <button class="btn {% if item.priority == 'doFirst' %}btn-secondary{% else %}btn-outline-secondary{% endif %} btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
-                                <button class="btn {% if item.priority == 'schedule' %}btn-secondary{% else %}btn-outline-secondary{% endif %} btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
-                                <button class="btn {% if item.priority == 'delegate' %}btn-secondary{% else %}btn-outline-secondary{% endif %} btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
-                                <button class="btn {% if item.priority == 'eliminate' %}btn-secondary{% else %}btn-outline-secondary{% endif %} btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
                             </div>
                         </div>
                         <div class="d-flex ms-auto justify-content-end">
@@ -195,59 +195,6 @@
         const itemsList = document.getElementById("items-list");
         let placeholder = document.createElement("div");
         placeholder.className = "placeholder";
-        placeholder.style.height = "50px";
-        placeholder.style.backgroundColor = "#f0f0f0";
-        placeholder.style.border = "2px dashed #ccc";
-        placeholder.style.marginBottom = "10px";
-        placeholder.style.borderRadius = "5px";
-
-        quadrants.forEach(quadrant => {
-        quadrant.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            quadrant.classList.add("border-dark");
-        });
-
-        quadrant.addEventListener("dragleave", () => {
-            quadrant.classList.remove("border-dark");
-        });
-
-        quadrant.addEventListener("drop", (e) => {
-            e.preventDefault();
-            quadrant.classList.remove("border-dark");
-
-            const draggedTask = document.querySelector(`.item-clone.dragging`);
-            const priority = quadrant.querySelector('.task-list').getAttribute('data-priority');
-            
-            if (draggedTask) {
-                draggedTask.classList.remove("dragging");
-                const rect = quadrant.getBoundingClientRect();
-                const xPx = e.clientX - rect.left;
-                const yPx = e.clientY - rect.top;
-                const xPercent = convertPxToPercent(xPx, rect.width);
-                const yPercent = convertPxToPercent(yPx, rect.height);
-                draggedTask.style.left = `${xPercent}%`;
-                draggedTask.style.top = `${yPercent}%`;
-                draggedTask.setAttribute('data-position-x', xPercent);
-                draggedTask.setAttribute('data-position-y', yPercent);
-                draggedTask.setAttribute('data-priority', priority);
-
-                // Remove any existing clone of the task item in the new quadrant
-                const existingClone = document.querySelector(`.item-clone[data-id="${draggedTask.getAttribute('data-id')}"]`);
-                if (existingClone && existingClone !== draggedTask) {
-                    existingClone.remove();
-                }
-
-                quadrant.querySelector('.task-list').appendChild(draggedTask);
-                savePosition(draggedTask.getAttribute('data-id'), xPercent, yPercent, priority);
-                updateAssignedQuadrant(draggedTask.getAttribute('data-id'), priority);
-            }
-        });
-    });
-
-    function convertPxToPercent(positionPx, containerSizePx) {
-        return (positionPx / containerSizePx) * 100;
-    }
-
 
         tasks.forEach(task => {
             task.addEventListener("dragstart", (e) => {
@@ -350,28 +297,36 @@
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
-        // Function to save item position
+        // Function to save position and priority
         function savePosition(itemId, positionX, positionY, priority) {
+            console.log(`Saving position for item ${itemId}: x=${positionX}, y=${positionY}, priority=${priority}`);
             fetch(`/update-position/${itemId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                'position_x': positionX,
-                'position_y': positionY,
-                'priority': priority
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    'position_x': positionX,
+                    'position_y': positionY,
+                    'priority': priority
+                })
             })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
             })
-            .then(response => response.json())
             .then(data => {
-            if (!data.success) {
-                alert('Error: ' + data.error);
-            }
+                if (!data.success) {
+                    console.error('Error:', data.error);
+                    alert('Error: ' + data.error);
+                }
             })
             .catch(error => {
-            alert('An unexpected error occurred while saving the item position.');
+                console.error('Unexpected error:', error);
+                alert('An unexpected error occurred while saving the position.');
             });
         }
 
@@ -379,57 +334,40 @@
         function loadSavedPositions() {
             const items = document.querySelectorAll('.task-item');
             items.forEach(item => {
-            const itemId = item.getAttribute('data-id');
-            const positionX = item.getAttribute('data-position-x');
-            const positionY = item.getAttribute('data-position-y');
-            const priority = item.getAttribute('data-priority');
+                const itemId = item.getAttribute('data-id');
+                const positionX = item.getAttribute('data-position-x');
+                const positionY = item.getAttribute('data-position-y');
+                const priority = item.getAttribute('data-priority');
 
-            if (positionX && positionY && priority) {
-                const quadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
-                const clone = document.createElement('div');
-                clone.classList.add('item-clone');
-                clone.setAttribute('draggable', 'true');
-                clone.setAttribute('data-id', itemId);
-                clone.setAttribute('data-position-x', positionX);
-                clone.setAttribute('data-position-y', positionY);
-                clone.setAttribute('data-priority', priority);
-                clone.style.left = `${positionX}%`;
-                clone.style.top = `${positionY}%`;
-                clone.style.transform = 'translate(-50%, -50%)';
-                clone.innerHTML = `<strong>${item.querySelector('strong').innerText}</strong>`;
+                if (positionX && positionY && priority) {
+                    const quadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+                    const clone = document.createElement('div');
+                    clone.classList.add('item-clone');
+                    clone.setAttribute('draggable', 'true');
+                    clone.setAttribute('data-id', itemId);
+                    clone.setAttribute('data-position-x', positionX);
+                    clone.setAttribute('data-position-y', positionY);
+                    clone.setAttribute('data-priority', priority);
+                    clone.style.left = `${positionX}px`;
+                    clone.style.top = `${positionY}px`;
+                    clone.innerHTML = `<strong>${item.querySelector('strong').innerText}</strong>`;
 
-                // Add drag and drop event listeners to the clone
-                clone.addEventListener('dragstart', function(e) {
-                e.dataTransfer.setData("text/plain", e.target.innerText);
-                clone.classList.add('dragging');
-                });
-                clone.addEventListener('dragend', function() {
-                clone.classList.remove('dragging');
-                });
+                    // Add drag and drop event listeners to the clone
+                    clone.addEventListener('dragstart', function(e) {
+                        e.dataTransfer.setData("text/plain", e.target.innerText);
+                        clone.classList.add('dragging');
+                    });
+                    clone.addEventListener('dragend', function() {
+                        clone.classList.remove('dragging');
+                    });
 
-                quadrant.appendChild(clone);
-            }
+                    quadrant.appendChild(clone);
+                }
             });
         }
 
         // Call the function to load saved positions when the page is loaded
         document.addEventListener('DOMContentLoaded', loadSavedPositions);
-
-        // Function to load saved order
-        function loadSavedOrder() {
-            const itemsList = document.getElementById('items-list');
-            const items = Array.from(itemsList.children);
-
-            items.sort((a, b) => a.getAttribute('data-order') - b.getAttribute('data-order'));
-
-            items.forEach(item => itemsList.appendChild(item));
-        }
-
-        // Call the functions to load saved positions and order when the page is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSavedPositions();
-            loadSavedOrder();
-        });
 
         // Function to sort items
         function sortItems(criteria) {
@@ -540,7 +478,7 @@
         function updateAssignedQuadrant(itemId, priority) {
             const assignedQuadrantElement = document.getElementById(`assigned-quadrant-${itemId}`);
             if (assignedQuadrantElement) {
-            assignedQuadrantElement.innerText = `Assigned to: ${priority}`;
+                assignedQuadrantElement.innerText = `Assigned to: ${priority}`;
             }
         }
 
@@ -550,81 +488,63 @@
             fetch(`/update-priority/${itemId}/`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
             },
             body: JSON.stringify({
-                'priority': priority
+            'priority': priority
             })
             })
             .then(response => response.json())
             .then(data => {
             if (data.success) {
-                const taskItem = document.querySelector(`.task-item[data-id="${itemId}"]`);
-                const targetQuadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
-                
-                // Remove any existing clone of the task item
-                const existingClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
-                if (existingClone) {
-                existingClone.remove();
-                }
+            const taskItem = document.querySelector(`.task-item[data-id="${itemId}"]`);
+            const targetQuadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+            
+            // Remove any existing clone of the task item
+            const existingClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+            if (existingClone) {
+            existingClone.remove();
+            }
 
-                // Create a simple version of the task item
-                const simpleTaskItem = document.createElement('div');
-                simpleTaskItem.classList.add('item-clone');
-                simpleTaskItem.setAttribute('draggable', 'true');
-                simpleTaskItem.setAttribute('data-id', itemId);
-                simpleTaskItem.setAttribute('data-position-x', '50');
-                simpleTaskItem.setAttribute('data-position-y', '50');
-                simpleTaskItem.setAttribute('data-priority', priority);
-                simpleTaskItem.style.left = '50%';
-                simpleTaskItem.style.top = '50%';
-                simpleTaskItem.style.transform = 'translate(-50%, -50%)';
-                simpleTaskItem.innerHTML = `<strong>${taskItem.querySelector('strong').innerText}</strong>`;
-                
-                // Add drag and drop event listeners to the simple task item
-                simpleTaskItem.addEventListener('dragstart', function(e) {
-                e.dataTransfer.setData("text/plain", e.target.innerText);
-                simpleTaskItem.classList.add('dragging');
-                });
-                simpleTaskItem.addEventListener('dragend', function() {
-                simpleTaskItem.classList.remove('dragging');
-                });
+            // Create a simple version of the task item
+            const simpleTaskItem = document.createElement('div');
+            simpleTaskItem.classList.add('item-clone');
+            simpleTaskItem.setAttribute('draggable', 'true');
+            simpleTaskItem.setAttribute('data-id', itemId);
+            simpleTaskItem.setAttribute('data-position-x', '');
+            simpleTaskItem.setAttribute('data-position-y', '');
+            simpleTaskItem.setAttribute('data-priority', priority);
+            simpleTaskItem.innerHTML = `<strong>${taskItem.querySelector('strong').innerText}</strong>`;
+            
+            // Add drag and drop event listeners to the simple task item
+            simpleTaskItem.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData("text/plain", e.target.innerText);
+            simpleTaskItem.classList.add('dragging');
+            });
+            simpleTaskItem.addEventListener('dragend', function() {
+            simpleTaskItem.classList.remove('dragging');
+            });
 
-                // Append the simple task item to the target quadrant
-                targetQuadrant.appendChild(simpleTaskItem);
+            // Append the simple task item to the target quadrant
+            targetQuadrant.appendChild(simpleTaskItem);
 
-                // Mark the original task item with the selected quadrant
-                document.getElementById(`assigned-quadrant-${itemId}`).innerText = `Assigned to: ${priority}`;
+            // Mark the original task item with the selected quadrant
+            document.getElementById(`assigned-quadrant-${itemId}`).innerText = `Assigned to: ${priority}`;
 
-                // Update button classes
-                updateButtonClasses(taskItem, priority);
-
-                // Save the position and priority
-                savePosition(itemId, 50, 50, priority);
+            // Save the position and priority
+            const rect = targetQuadrant.getBoundingClientRect();
+            const x = rect.left;
+            const y = rect.top;
+            savePosition(itemId, x, y, priority);
             } else {
-                alert('Error: ' + data.error);
+            alert('Error: ' + data.error);
             }
             })
             .catch(error => {
             alert('An unexpected error occurred while updating the task priority.');
             });
         }
-
-        function updateButtonClasses(taskItem, priority) {
-    const buttons = taskItem.querySelectorAll('button');
-    buttons.forEach(button => {
-        if (button.innerText.includes('Do First')) {
-            button.className = priority === 'doFirst' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-        } else if (button.innerText.includes('Schedule')) {
-            button.className = priority === 'schedule' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-        } else if (button.innerText.includes('Delegate')) {
-            button.className = priority === 'delegate' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-        } else if (button.innerText.includes('Eliminate')) {
-            button.className = priority === 'eliminate' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-        }
-    });
-}
 
         // Function to load saved order
         function loadSavedOrder() {
@@ -648,67 +568,65 @@
             fetch('/create_item/', {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
             },
             body: JSON.stringify({
-            'title': title,
-            'deadline': deadline,
-            'item_list': {{ item_list.id }}
+                'title': title,
+                'deadline': deadline,
+                'item_list': {{ item_list.id }}
             })
             })
             .then(response => {
             if (!response.ok) {
-            throw new Error('Network response was not ok');
+                throw new Error('Network response was not ok');
             }
             return response.json();
             })
             .then(data => {
             if (data.success) {
-            const newItem = document.createElement('div');
-            newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item', 'p-2', 'p-md-3', 'border', 'border-secondary', 'rounded', 'mb-2', 'bg-light', 'cursor-move', 'd-inline-block', 'small');
-            newItem.setAttribute('draggable', 'true');
-            newItem.setAttribute('data-id', data.item.id);
-            newItem.setAttribute('data-position-x', '');
-            newItem.setAttribute('data-position-y', '');
-            newItem.setAttribute('data-priority', '');
-            newItem.setAttribute('data-order', '');
-            newItem.setAttribute('data-deadline', deadline);
-            newItem.innerHTML = `
-            <div class="w-100 me-2 align-self-start">
-                <input type="checkbox" class="select-item me-2" value="${data.item.id}">
-                <strong>${title}</strong> 
-                <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${data.item.id}" data-title="${title}" data-description="" data-deadline="${deadline}">
-                <i class="fas fa-edit"></i>
-                </button>
-                <br>
-                <small>Deadline: ${deadline ? deadline : 'None'}</small>
-                <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
-            </div>
-            <div>
-                <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
-                <div class="d-flex flex-wrap ms-auto">
-                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
-                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
-                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
-                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
+                const newItem = document.createElement('div');
+                newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item', 'p-2', 'p-md-3', 'border', 'border-secondary', 'rounded', 'mb-2', 'bg-light', 'cursor-move', 'd-inline-block', 'small');
+                newItem.setAttribute('draggable', 'true');
+                newItem.setAttribute('data-id', data.item.id);
+                newItem.setAttribute('data-position-x', '');
+                newItem.setAttribute('data-position-y', '');
+                newItem.setAttribute('data-priority', '');
+                newItem.setAttribute('data-order', '');
+                newItem.setAttribute('data-deadline', deadline);
+                newItem.innerHTML = `
+                <div class="w-100 me-2 align-self-start">
+                    <input type="checkbox" class="select-item me-2" value="${data.item.id}">
+                    <strong>${title}</strong>
+                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${data.item.id}" data-title="${title}" data-description="" data-deadline="${deadline}">
+                    <i class="fas fa-edit"></i>
+                    </button>
+                    <br>
+                    <small>Deadline: ${deadline ? deadline : 'None'}</small>
+                    <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
                 </div>
+                <div>
+                    <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
+                    <div class="d-flex flex-wrap ms-auto">
+                        <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
+                        <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
+                        <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
+                        <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
+                    </div>
+                    </div>
+                    <div class="d-flex ms-auto justify-content-end">
+                    <!-- Button to Remove Item Clone -->
+                    <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${data.item.id}')">
+                        <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
+                    </button>
+                    </div>
                 </div>
-                <div class="d-flex ms-auto justify-content-end">
-                <!-- Button to Remove Item Clone -->
-                <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${data.item.id}')">
-                    <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
-                </button>
-                </div>
-            </div>
-            <div class="position-absolute" style="right: 0; top: 0;">
-            </div>
-            `;
-            document.getElementById('items-list').appendChild(newItem);
-            document.getElementById('add-item-form').reset();
-            $('#addNewItemModal').modal('hide');
+                `;
+                document.getElementById('items-list').appendChild(newItem);
+                document.getElementById('add-item-form').reset();
+                $('#addNewItemModal').modal('hide');
             } else {
-            alert('Error: ' + data.error);
+                alert('Error: ' + data.error);
             }
             })
             .catch(error => {
@@ -725,68 +643,67 @@
             fetch('/create_items/', {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
             },
             body: JSON.stringify({
-            'titles': titles,
-            'item_list': {{ item_list.id }}
+                'titles': titles,
+                'item_list': {{ item_list.id }}
             })
             })
             .then(response => {
             if (!response.ok) {
-            throw new Error('Network response was not ok');
+                throw new Error('Network response was not ok');
             }
             return response.json();
             })
             .then(data => {
             if (data.success) {
-            data.items.forEach(item => {
-            const newItem = document.createElement('div');
-            newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item', 'p-2', 'p-md-3', 'border', 'border-secondary', 'rounded', 'mb-2', 'bg-light', 'cursor-move', 'd-inline-block', 'small');
-            newItem.setAttribute('draggable', 'true');
-            newItem.setAttribute('data-id', item.id);
-            newItem.setAttribute('data-position-x', '');
-            newItem.setAttribute('data-position-y', '');
-            newItem.setAttribute('data-priority', '');
-            newItem.setAttribute('data-order', '');
-            newItem.setAttribute('data-deadline', '');
-            newItem.innerHTML = `
-                <div class="w-100 me-2 align-self-start">
-                <input type="checkbox" class="select-item me-2" value="${item.id}">
-                <strong>${item.title}</strong> 
-                <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${item.id}" data-title="${item.title}" data-description="" data-deadline="">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <br>
-                <small>Deadline: None</small>
-                <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
-                </div>
-                <div>
-                <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
-                    <div class="d-flex flex-wrap ms-auto">
-                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
-                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
-                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
-                    <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
+                data.items.forEach(item => {
+                const newItem = document.createElement('div');
+                newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
+                newItem.setAttribute('draggable', 'true');
+                newItem.setAttribute('data-id', item.id);
+                newItem.setAttribute('data-position-x', '');
+                newItem.setAttribute('data-position-y', '');
+                newItem.setAttribute('data-priority', '');
+                newItem.setAttribute('data-order', '');
+                newItem.setAttribute('data-deadline', '');
+                newItem.innerHTML = `
+                    <div class="w-100 me-2 align-self-start">
+                        <input type="checkbox" class="select-item me-2" value="${item.id}">
+                        <strong>${item.title}</strong>
+                        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${item.id}" data-title="${item.title}" data-description="" data-deadline="">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <br>
+                        <small>Deadline: None</small>
+                        <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
                     </div>
-                </div>
-                <div class="d-flex ms-auto justify-content-end">
-                    <!-- Button to Remove Item Clone -->
-                    <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${item.id}')">
-                    <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
-                    </button>
-                </div>
-                </div>
-                <div class="position-absolute" style="right: 0; top: 0;">
-                </div>
-            `;
-            document.getElementById('items-list').appendChild(newItem);
-            });
-            document.getElementById('bulk-add-item-form').reset();
-            $('#addNewItemModal').modal('hide');
+                    <div>
+                        <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
+                            <div class="d-flex flex-wrap ms-auto">
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
+                            </div>
+                        </div>
+                        <div class="d-flex ms-auto justify-content-end">
+                            <!-- Button to Remove Item Clone -->
+                            <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${item.id}')">
+                                <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
+                            </button>
+                        </div>
+                    </div>
+                `;
+                `;
+                document.getElementById('items-list').appendChild(newItem);
+                });
+                document.getElementById('bulk-add-item-form').reset();
+                $('#addNewItemModal').modal('hide');
             } else {
-            alert('Error: ' + data.error);
+                alert('Error: ' + data.error);
             }
             })
             .catch(error => {
@@ -833,125 +750,6 @@
             console.error(`Item clone with ID ${itemId} not found.`);
             }
         }
-
-        // Function to handle drag and drop
-    function handleDragAndDrop() {
-
-        tasks.forEach(task => {
-            task.addEventListener("dragstart", (e) => {
-                e.dataTransfer.setData("text/plain", e.target.innerText);
-                task.classList.add("dragging");
-            });
-
-            task.addEventListener("dragend", () => {
-                task.classList.remove("dragging");
-                placeholder.remove();
-            });
-
-            // Set initial position if available
-            if (task.classList.contains('item-clone')) {
-                const positionX = task.getAttribute('data-position-x');
-                const positionY = task.getAttribute('data-position-y');
-                if (positionX && positionY) {
-                    task.style.left = `${positionX}%`;
-                    task.style.top = `${positionY}%`;
-                }
-            }
-        });
-
-        
-        quadrants.forEach(quadrant => {
-            quadrant.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                quadrant.classList.add("border-dark");
-            });
-
-            quadrant.addEventListener("dragleave", () => {
-                quadrant.classList.remove("border-dark");
-            });
-
-            quadrant.addEventListener("drop", (e) => {
-                e.preventDefault();
-                quadrant.classList.remove("border-dark");
-
-                const draggedTask = document.querySelector(`.item-clone.dragging`);
-                const priority = quadrant.querySelector('.task-list').getAttribute('data-priority');
-                
-                if (draggedTask) {
-                    draggedTask.classList.remove("dragging");
-                    const rect = quadrant.getBoundingClientRect();
-                    const xPx = e.clientX - rect.left;
-                    const yPx = e.clientY - rect.top;
-                    const xPercent = convertPxToPercent(xPx, rect.width);
-                    const yPercent = convertPxToPercent(yPx, rect.height);
-                    draggedTask.style.left = `${xPercent}%`;
-                    draggedTask.style.top = `${yPercent}%`;
-                    draggedTask.setAttribute('data-position-x', xPercent);
-                    draggedTask.setAttribute('data-position-y', yPercent);
-                    draggedTask.setAttribute('data-priority', priority);
-
-                    // Remove any existing clone of the task item in the new quadrant
-                    const existingClone = document.querySelector(`.item-clone[data-id="${draggedTask.getAttribute('data-id')}"]`);
-                    if (existingClone && existingClone !== draggedTask) {
-                        existingClone.remove();
-                    }
-
-                    quadrant.querySelector('.task-list').appendChild(draggedTask);
-                    savePosition(draggedTask.getAttribute('data-id'), xPercent, yPercent, priority);
-                    updateAssignedQuadrant(draggedTask.getAttribute('data-id'), priority);
-                }
-            });
-        });
-
-        itemsList.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            itemsList.classList.add("border-dark");
-
-            const draggingItem = document.querySelector(".task-item.dragging");
-            const afterElement = getDragAfterElement(itemsList, e.clientY);
-            if (afterElement == null) {
-                itemsList.appendChild(placeholder);
-            } else {
-                itemsList.insertBefore(placeholder, afterElement);
-            }
-        });
-
-        itemsList.addEventListener("dragleave", () => {
-            itemsList.classList.remove("border-dark");
-            placeholder.remove();
-        });
-
-        itemsList.addEventListener("drop", (e) => {
-            e.preventDefault();
-            itemsList.classList.remove("border-dark");
-
-            const draggedTask = document.querySelector(`.task-item.dragging`);
-            
-            if (draggedTask) {
-                draggedTask.classList.remove("dragging");
-                itemsList.insertBefore(draggedTask, placeholder);
-                placeholder.remove();
-                saveOrder();
-            }
-        });
-
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll(".task-item:not(.dragging)")];
-
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = y - box.top - box.height / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-    }
-
-    // Call the function to handle drag and drop when the page is loaded
-    document.addEventListener('DOMContentLoaded', handleDragAndDrop);
     </script>
 </body>
 </html>

@@ -82,24 +82,17 @@ header {
     padding: 0 !important;
 }
 .task-item, .item-clone {
-    background-color: rgba(248, 249, 250, 0.8);
     width: auto;
 }
 .item-clone {
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none; /* Firefox */
-    -ms-user-select: none; /* Internet Explorer/Edge */
-    user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
     position: absolute;
     max-width: 120px;
-    padding: .25rem;
-    border: 1px solid var(--medium-gray);
-    border-radius: 5px;
-    background-color: rgba(248, 249, 250, 0.8);
-    cursor: move;
-    display: inline-block;
     font-size: .75rem;
     width: auto;
+    border: 1px solid var(--medium-gray);
+    background-color: rgba(248, 249, 250, 0.8);
+    padding: .25rem;
+    border-radius: .25rem;
 }
 .task-item.dragging, .item-clone.dragging {
     opacity: 0.5;
