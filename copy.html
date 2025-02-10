@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScrollToDo - Organize, Prioritize, and Conquer</title>
+    {% load static %}
+    <link href="{% static 'tasks/styles.css' %}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <!-- Navigation Bar -->
+    {% include 'tasks/navbar.html' %}
+
+    <div class="container my-5">
+        <h2 class="fw-bold">{{ item_list.name }}</h2>
+        <p class="text-muted">{{ item_list.item_set.count }} items remaining</p>
+        <div class="progress mt-2" style="height: 8px;">
+            <div class="progress-bar bg-success" style="width: {{ completion_percentage }}%;"></div>
+        </div>
+
+        <div class="mt-4">
+            <h3 class="fw-bold">Priority Matrix</h3>
+            <div class="row">
+                <div class="p-2 p-md-3">
+                <div class="col-12 position-relative border-start border-bottom border-3 border-primary p-2 p-md-3">
+                    <i class="fas fa-caret-up position-absolute fs-3 text-primary" style="top: -.5rem; left: -.6rem;"></i>
+                    <p class="position-absolute text-primary" style="top: -1rem; left: .5rem;">Impact</p>
+                    <i class="fas fa-caret-right position-absolute fs-3 text-primary" style="bottom: -.9rem; right: -.5rem;"></i>
+                    <p class="position-absolute text-primary" style="bottom: -2.6rem; right: .25rem;">Effort</p>
+                    <div class="row m-0">
+                        <div class="col-6 m-0 p-0">
+                            <div class="quadrant border m-0 p-3 position-relative overflow-hidden" id="doFirst">
+                                <h4 class="mb-3">Do First</h4>
+                                <div class="task-list" data-priority="doFirst">
+                                    <!-- Tasks will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 m-0 p-0">
+                            <div class="quadrant border m-0 p-3 position-relative overflow-hidden" id="schedule">
+                                <h4 class="mb-3">Schedule</h4>
+                                <div class="task-list" data-priority="schedule">
+                                    <!-- Tasks will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 m-0 p-0">
+                            <div class="quadrant border m-0 p-3 position-relative overflow-hidden" id="delegate">
+                                <h4 class="mb-3">Delegate</h4>
+                                <div class="task-list" data-priority="delegate">
+                                    <!-- Tasks will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 m-0 p-0">
+                            <div class="quadrant border m-0 p-3 position-relative overflow-hidden" id="eliminate">
+                                <h4 class="mb-3">Eliminate</h4>
+                                <div class="task-list" data-priority="eliminate">
+                                    <!-- Tasks will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h3 class="fw-bold">Items</h3>
+
+            <!-- Item Sorting and Actions -->
+            <div class="d-flex mb-2">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        Sort Items
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                        <li><a class="dropdown-item" href="#" onclick="sortItems('deadline')">Sort by Deadline</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="sortItems('priority')">Sort by Priority</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="sortItems('alphabet')">Sort by Alphabet</a></li>
+                    </ul>
+                </div>
+                <div class="ms-auto">
+                    <button type="button" class="btn btn-danger mb-md-0 me-md-2" onclick="deleteSelectedItems()">
+                        <i class="fas fa-trash-alt"></i> 
+                        <span class="d-none d-md-inline">Delete Selected</span>
+                        <span class="d-inline d-md-none">Delete</span>
+                    </button>
+                    
+                    <!-- Button to trigger the Add New Item Modal -->
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNewItemModal">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </div>
+            </div>
+            <div class="list-group" id="items-list">
+                {% for item in items %}
+                <div class="list-group-item d-flex justify-content-between align-items-center task-item p-2 p-md-3 border border-secondary rounded mb-2 bg-light cursor-move d-inline-block small" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
+                    <div class="w-100 me-2 align-self-start">
+                        <input type="checkbox" class="select-item me-2" value="{{ item.id }}">
+                        <strong>{{ item.title }}</strong> 
+                        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="{{ item.id }}" data-title="{{ item.title }}" data-description="{{ item.description }}" data-deadline="{{ item.deadline }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <br>
+                        <small>Deadline: {{ item.deadline }}</small>
+                        <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
+                    </div>
+                    <div>
+                        <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
+                            <div class="d-flex flex-wrap ms-auto">
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('{{ item.id }}', 'doFirst')">Do First</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('{{ item.id }}', 'schedule')">Schedule</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('{{ item.id }}', 'delegate')">Delegate</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('{{ item.id }}', 'eliminate')">Eliminate</button>
+                            </div>
+                        </div>
+                        <div class="d-flex ms-auto justify-content-end">
+                            <!-- Button to Remove Item Clone -->
+                            <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('{{ item.id }}')">
+                                <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
+                            </button>
+                        </div>
+                    </div>
+    
+                    <div class="position-absolute" style="right: 0; top: 0;">
+                        
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+<!-- Add New Item Modal -->
+<div class="modal fade" id="addNewItemModal" tabindex="-1" aria-labelledby="addNewItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addNewItemModalLabel">Add New Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" id="addItemTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="single-item-tab" data-bs-toggle="tab" data-bs-target="#single-item" type="button" role="tab" aria-controls="single-item" aria-selected="true">Single Item</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="bulk-items-tab" data-bs-toggle="tab" data-bs-target="#bulk-items" type="button" role="tab" aria-controls="bulk-items" aria-selected="false">Bulk Items</button>
+                    </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="single-item" role="tabpanel" aria-labelledby="single-item-tab">
+                        <form id="add-item-form" class="mt-3">
+                            <div class="input-group mb-3">
+                                <input type="text" id="new-item-title" class="form-control" placeholder="New item title" required>
+                                <input type="date" id="new-item-deadline" class="form-control" placeholder="Deadline">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Item</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="bulk-items" role="tabpanel" aria-labelledby="bulk-items-tab">
+                        <form id="bulk-add-item-form" class="mt-3">
+                            <div class="input-group mb-3">
+                                <textarea id="bulk-item-titles" class="form-control" placeholder="Paste items here, one per line" rows="3"></textarea>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Items</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Footer -->
+    {% include 'tasks/footer.html' %}
+
+    <!-- Bootstrap JavaScript and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        const tasks = document.querySelectorAll(".task-item, .item-clone");
+        const quadrants = document.querySelectorAll(".quadrant");
+        const itemsList = document.getElementById("items-list");
+        let placeholder = document.createElement("div");
+        placeholder.className = "placeholder";
+
+        tasks.forEach(task => {
+            task.addEventListener("dragstart", (e) => {
+                e.dataTransfer.setData("text/plain", e.target.innerText);
+                task.classList.add("dragging");
+            });
+
+            task.addEventListener("dragend", () => {
+                task.classList.remove("dragging");
+                placeholder.remove();
+            });
+
+            // Set initial position if available
+            if (task.classList.contains('item-clone')) {
+                const positionX = task.getAttribute('data-position-x');
+                const positionY = task.getAttribute('data-position-y');
+                if (positionX && positionY) {
+                    task.style.left = `${positionX}px`;
+                    task.style.top = `${positionY}px`;
+                }
+            }
+        });
+
+        quadrants.forEach(quadrant => {
+            quadrant.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                quadrant.classList.add("border-dark");
+            });
+
+            quadrant.addEventListener("dragleave", () => {
+                quadrant.classList.remove("border-dark");
+            });
+
+            quadrant.addEventListener("drop", (e) => {
+                e.preventDefault();
+                quadrant.classList.remove("border-dark");
+
+                const draggedTask = document.querySelector(`.item-clone.dragging`);
+                const priority = quadrant.querySelector('.task-list').getAttribute('data-priority');
+                
+                if (draggedTask) {
+                    draggedTask.classList.remove("dragging");
+                    const rect = quadrant.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    draggedTask.style.left = `${x}px`;
+                    draggedTask.style.top = `${y}px`;
+                    draggedTask.setAttribute('data-position-x', x);
+                    draggedTask.setAttribute('data-position-y', y);
+                    quadrant.querySelector('.task-list').appendChild(draggedTask);
+                    savePosition(draggedTask.getAttribute('data-id'), x, y, priority);
+                    updateAssignedQuadrant(draggedTask.getAttribute('data-id'), priority);
+                }
+            });
+        });
+
+        itemsList.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            itemsList.classList.add("border-dark");
+
+            const draggingItem = document.querySelector(".task-item.dragging");
+            const afterElement = getDragAfterElement(itemsList, e.clientY);
+            if (afterElement == null) {
+                itemsList.appendChild(placeholder);
+            } else {
+                itemsList.insertBefore(placeholder, afterElement);
+            }
+        });
+
+        itemsList.addEventListener("dragleave", () => {
+            itemsList.classList.remove("border-dark");
+            placeholder.remove();
+        });
+
+        itemsList.addEventListener("drop", (e) => {
+            e.preventDefault();
+            itemsList.classList.remove("border-dark");
+
+            const draggedTask = document.querySelector(`.task-item.dragging`);
+            
+            if (draggedTask) {
+                draggedTask.classList.remove("dragging");
+                itemsList.insertBefore(draggedTask, placeholder);
+                placeholder.remove();
+                saveOrder();
+            }
+        });
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll(".task-item:not(.dragging)")];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // Function to save position and priority
+        function savePosition(itemId, positionX, positionY, priority) {
+            console.log(`Saving position for item ${itemId}: x=${positionX}, y=${positionY}, priority=${priority}`);
+            fetch(`/update-position/${itemId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    'position_x': positionX,
+                    'position_y': positionY,
+                    'priority': priority
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                    console.error('Error:', data.error);
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('An unexpected error occurred while saving the position.');
+            });
+        }
+
+        // Function to load saved positions and priorities
+        function loadSavedPositions() {
+            const items = document.querySelectorAll('.task-item');
+            items.forEach(item => {
+                const itemId = item.getAttribute('data-id');
+                const positionX = item.getAttribute('data-position-x');
+                const positionY = item.getAttribute('data-position-y');
+                const priority = item.getAttribute('data-priority');
+
+                if (positionX && positionY && priority) {
+                    const quadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+                    const clone = document.createElement('div');
+                    clone.classList.add('item-clone');
+                    clone.setAttribute('draggable', 'true');
+                    clone.setAttribute('data-id', itemId);
+                    clone.setAttribute('data-position-x', positionX);
+                    clone.setAttribute('data-position-y', positionY);
+                    clone.setAttribute('data-priority', priority);
+                    clone.style.left = `${positionX}px`;
+                    clone.style.top = `${positionY}px`;
+                    clone.innerHTML = `<strong>${item.querySelector('strong').innerText}</strong>`;
+
+                    // Add drag and drop event listeners to the clone
+                    clone.addEventListener('dragstart', function(e) {
+                        e.dataTransfer.setData("text/plain", e.target.innerText);
+                        clone.classList.add('dragging');
+                    });
+                    clone.addEventListener('dragend', function() {
+                        clone.classList.remove('dragging');
+                    });
+
+                    quadrant.appendChild(clone);
+                }
+            });
+        }
+
+        // Call the function to load saved positions when the page is loaded
+        document.addEventListener('DOMContentLoaded', loadSavedPositions);
+
+        // Function to sort items
+        function sortItems(criteria) {
+            const itemsList = document.getElementById('items-list');
+            const items = Array.from(itemsList.children);
+
+            if (criteria === 'priority') {
+                const priorityOrder = ['doFirst', 'schedule', 'delegate', 'eliminate'];
+                items.sort((a, b) => {
+                    return priorityOrder.indexOf(a.getAttribute('data-priority')) - priorityOrder.indexOf(b.getAttribute('data-priority'));
+                });
+            } else {
+                items.sort((a, b) => {
+                    if (criteria === 'deadline') {
+                        return new Date(a.getAttribute('data-deadline')) - new Date(b.getAttribute('data-deadline'));
+                    } else if (criteria === 'alphabet') {
+                        return a.querySelector('strong').innerText.localeCompare(b.querySelector('strong').innerText);
+                    }
+                });
+            }
+
+            items.forEach(item => itemsList.appendChild(item));
+            saveOrder();
+        }
+
+        // Function to save the order of items
+        function saveOrder() {
+            const items = document.querySelectorAll('.task-item');
+            items.forEach((item, index) => {
+                const itemId = item.getAttribute('data-id');
+                const order = index + 1;
+                item.setAttribute('data-order', order);
+                fetch(`/update-position/${itemId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        'order': order
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.success) {
+                        console.error('Error:', data.error);
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Unexpected error:', error);
+                    alert('An unexpected error occurred while saving the order.');
+                });
+            });
+        }
+
+        // Function to delete selected items
+        function deleteSelectedItems() {
+            const selectedItems = document.querySelectorAll('.select-item:checked');
+            const itemIds = Array.from(selectedItems).map(item => item.value);
+
+            fetch('/delete_items/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'item_ids': itemIds
+            })
+            })
+            .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+            })
+            .then(data => {
+            if (data.success) {
+                // Remove the original items and their clones from the DOM
+                itemIds.forEach(itemId => {
+                const originalItem = document.querySelector(`.task-item[data-id="${itemId}"]`);
+                const itemClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+                if (originalItem) {
+                    originalItem.remove();
+                }
+                if (itemClone) {
+                    itemClone.remove();
+                }
+                });
+            } else {
+                console.error('Error:', data.error);
+                alert('Error: ' + data.error);
+            }
+            })
+            .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('An unexpected error occurred while deleting the items.');
+            });
+        }
+
+        // Function to update the assigned quadrant
+        function updateAssignedQuadrant(itemId, priority) {
+            const assignedQuadrantElement = document.getElementById(`assigned-quadrant-${itemId}`);
+            if (assignedQuadrantElement) {
+                assignedQuadrantElement.innerText = `Assigned to: ${priority}`;
+            }
+        }
+
+        // Function to assign priority using buttons
+        function assignPriority(itemId, priority) {
+            // Send fetch request to update the priority of the task
+            fetch(`/update-priority/${itemId}/`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+            'priority': priority
+            })
+            })
+            .then(response => response.json())
+            .then(data => {
+            if (data.success) {
+            const taskItem = document.querySelector(`.task-item[data-id="${itemId}"]`);
+            const targetQuadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+            
+            // Remove any existing clone of the task item
+            const existingClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+            if (existingClone) {
+            existingClone.remove();
+            }
+
+            // Create a simple version of the task item
+            const simpleTaskItem = document.createElement('div');
+            simpleTaskItem.classList.add('item-clone');
+            simpleTaskItem.setAttribute('draggable', 'true');
+            simpleTaskItem.setAttribute('data-id', itemId);
+            simpleTaskItem.setAttribute('data-position-x', '');
+            simpleTaskItem.setAttribute('data-position-y', '');
+            simpleTaskItem.setAttribute('data-priority', priority);
+            simpleTaskItem.innerHTML = `<strong>${taskItem.querySelector('strong').innerText}</strong>`;
+            
+            // Add drag and drop event listeners to the simple task item
+            simpleTaskItem.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData("text/plain", e.target.innerText);
+            simpleTaskItem.classList.add('dragging');
+            });
+            simpleTaskItem.addEventListener('dragend', function() {
+            simpleTaskItem.classList.remove('dragging');
+            });
+
+            // Append the simple task item to the target quadrant
+            targetQuadrant.appendChild(simpleTaskItem);
+
+            // Mark the original task item with the selected quadrant
+            document.getElementById(`assigned-quadrant-${itemId}`).innerText = `Assigned to: ${priority}`;
+
+            // Save the position and priority
+            const rect = targetQuadrant.getBoundingClientRect();
+            const x = rect.left;
+            const y = rect.top;
+            savePosition(itemId, x, y, priority);
+            } else {
+            alert('Error: ' + data.error);
+            }
+            })
+            .catch(error => {
+            alert('An unexpected error occurred while updating the task priority.');
+            });
+        }
+
+        // Function to load saved order
+        function loadSavedOrder() {
+            const itemsList = document.getElementById('items-list');
+            const items = Array.from(itemsList.children);
+
+            items.sort((a, b) => a.getAttribute('data-order') - b.getAttribute('data-order'));
+
+            items.forEach(item => itemsList.appendChild(item));
+        }
+
+        // Call the function to load saved order when the page is loaded
+        document.addEventListener('DOMContentLoaded', loadSavedOrder);
+
+        // Function to add a new item
+        document.getElementById('add-item-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('new-item-title').value;
+            const deadline = document.getElementById('new-item-deadline').value || null;
+
+            fetch('/create_item/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'title': title,
+                'deadline': deadline,
+                'item_list': {{ item_list.id }}
+            })
+            })
+            .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+            })
+            .then(data => {
+            if (data.success) {
+                const newItem = document.createElement('div');
+                newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item', 'p-2', 'p-md-3', 'border', 'border-secondary', 'rounded', 'mb-2', 'bg-light', 'cursor-move', 'd-inline-block', 'small');
+                newItem.setAttribute('draggable', 'true');
+                newItem.setAttribute('data-id', data.item.id);
+                newItem.setAttribute('data-position-x', '');
+                newItem.setAttribute('data-position-y', '');
+                newItem.setAttribute('data-priority', '');
+                newItem.setAttribute('data-order', '');
+                newItem.setAttribute('data-deadline', deadline);
+                newItem.innerHTML = `
+                <div class="w-100 me-2 align-self-start">
+                    <input type="checkbox" class="select-item me-2" value="${data.item.id}">
+                    <strong>${title}</strong>
+                    <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${data.item.id}" data-title="${title}" data-description="" data-deadline="${deadline}">
+                    <i class="fas fa-edit"></i>
+                    </button>
+                    <br>
+                    <small>Deadline: ${deadline ? deadline : 'None'}</small>
+                    <small class="text-muted" id="assigned-quadrant-${data.item.id}">Assigned to: </small>
+                </div>
+                <div>
+                    <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
+                    <div class="d-flex flex-wrap ms-auto">
+                        <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${data.item.id}', 'doFirst')">Do First</button>
+                        <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${data.item.id}', 'schedule')">Schedule</button>
+                        <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${data.item.id}', 'delegate')">Delegate</button>
+                        <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${data.item.id}', 'eliminate')">Eliminate</button>
+                    </div>
+                    </div>
+                    <div class="d-flex ms-auto justify-content-end">
+                    <!-- Button to Remove Item Clone -->
+                    <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${data.item.id}')">
+                        <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
+                    </button>
+                    </div>
+                </div>
+                `;
+                document.getElementById('items-list').appendChild(newItem);
+                document.getElementById('add-item-form').reset();
+                $('#addNewItemModal').modal('hide');
+            } else {
+                alert('Error: ' + data.error);
+            }
+            })
+            .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('An unexpected error occurred while adding the item.');
+            });
+        });
+
+        // Function to add multiple items
+        document.getElementById('bulk-add-item-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const titles = document.getElementById('bulk-item-titles').value.split('\n').filter(title => title.trim() !== '');
+
+            fetch('/create_items/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'titles': titles,
+                'item_list': {{ item_list.id }}
+            })
+            })
+            .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+            })
+            .then(data => {
+            if (data.success) {
+                data.items.forEach(item => {
+                const newItem = document.createElement('div');
+                newItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center', 'task-item');
+                newItem.setAttribute('draggable', 'true');
+                newItem.setAttribute('data-id', item.id);
+                newItem.setAttribute('data-position-x', '');
+                newItem.setAttribute('data-position-y', '');
+                newItem.setAttribute('data-priority', '');
+                newItem.setAttribute('data-order', '');
+                newItem.setAttribute('data-deadline', '');
+                newItem.innerHTML = `
+                    <div class="w-100 me-2 align-self-start">
+                        <input type="checkbox" class="select-item me-2" value="${item.id}">
+                        <strong>${item.title}</strong>
+                        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="${item.id}" data-title="${item.title}" data-description="" data-deadline="">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <br>
+                        <small>Deadline: None</small>
+                        <small class="text-muted" id="assigned-quadrant-${item.id}">Assigned to: </small>
+                    </div>
+                    <div>
+                        <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
+                            <div class="d-flex flex-wrap ms-auto">
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: .2rem 0 0 0;" onclick="assignPriority('${item.id}', 'doFirst')">Do First</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 .2rem 0 0;" onclick="assignPriority('${item.id}', 'schedule')">Schedule</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 0 .2rem;" onclick="assignPriority('${item.id}', 'delegate')">Delegate</button>
+                                <button class="btn btn-outline-secondary btn-sm m-0 col-6" style="border-radius: 0 0 .2rem 0;" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
+                            </div>
+                        </div>
+                        <div class="d-flex ms-auto justify-content-end">
+                            <!-- Button to Remove Item Clone -->
+                            <button class="btn btn-outline-danger btn-sm d-flex align-items-center ms-autofs-6" onclick="removeItemClone('${item.id}')">
+                                <i class="fas fa-times me-2"></i>&nbsp;Remove from Matrix
+                            </button>
+                        </div>
+                    </div>
+                `;
+                `;
+                document.getElementById('items-list').appendChild(newItem);
+                });
+                document.getElementById('bulk-add-item-form').reset();
+                $('#addNewItemModal').modal('hide');
+            } else {
+                alert('Error: ' + data.error);
+            }
+            })
+            .catch(error => {
+            console.error('Unexpected error:', error);
+            alert('An unexpected error occurred while adding the items.');
+            });
+        });
+
+        function removeItemClone(itemId) {
+            // Find the item-clone element by its data-id attribute
+            var itemClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+            if (itemClone) {
+            itemClone.remove();
+            // Send a request to the server to update the item's position to null
+            fetch(`/remove-item-clone/${itemId}/`, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                'position_x': null,
+                'position_y': null,
+                'priority': null
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.success) {
+                console.error('Error:', data.error);
+                alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Unexpected error:', error);
+                alert('An unexpected error occurred while removing the item clone.');
+            });
+            } else {
+            console.error(`Item clone with ID ${itemId} not found.`);
+            }
+        }
+    </script>
+</body>
+</html>
