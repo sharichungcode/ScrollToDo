@@ -433,3 +433,21 @@ def remove_item_clone(request, item_id):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+@login_required
+def update_position(request, item_id):
+    if request.method == 'POST':
+        try:
+            item = Item.objects.get(id=item_id, user=request.user)
+            data = json.loads(request.body)
+            item.position_x = data.get('position_x', item.position_x)
+            item.position_y = data.get('position_y', item.position_y)
+            item.priority = data.get('priority', item.priority)
+            item.save()
+            return JsonResponse({'success': True})
+        except Item.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
