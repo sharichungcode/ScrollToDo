@@ -104,13 +104,13 @@
                 <div class="list-group-item d-flex justify-content-between align-items-center task-item p-2 p-md-3 border border-secondary rounded mb-2 bg-light cursor-move d-inline-block small" draggable="true" data-id="{{ item.id }}" data-position-x="{{ item.position_x }}" data-position-y="{{ item.position_y }}" data-priority="{{ item.priority }}" data-order="{{ item.order }}" data-deadline="{{ item.deadline }}">
                     <div class="w-100 me-2 align-self-start">
                         <input type="checkbox" class="select-item me-2" value="{{ item.id }}">
-                        <strong>{{ item.title }}</strong> 
-                        <button class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="{{ item.id }}" data-title="{{ item.title }}" data-description="{{ item.description }}" data-deadline="{{ item.deadline }}">
-                            <i class="fas fa-edit"></i>
-                        </button>
+                        
+                        <a href="#" class="h6" data-bs-toggle="modal" data-bs-target="#editItemModal" data-id="{{ item.id }}" data-title="{{ item.title }}" data-description="{{ item.description }}" data-deadline="{{ item.deadline }}">
+                            <strong>{{ item.title }}</strong> <i class="fas fa-edit"></i>
+                        </a>
                         <br>
                         <small>Deadline: {{ item.deadline }}</small>
-                        <small class="text-muted" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
+                        <small class="text-muted d-none" id="assigned-quadrant-{{ item.id }}">Assigned to: {{ item.priority }}</small>
                     </div>
                     <div>
                         <div class="d-flex flex-column flex-md-row mb-2 justify-content-end">
@@ -350,62 +350,64 @@
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
-        // Function to save item position
         function savePosition(itemId, positionX, positionY, priority) {
-            fetch(`/update-position/${itemId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                'position_x': positionX,
-                'position_y': positionY,
-                'priority': priority
-            })
-            })
-            .then(response => response.json())
-            .then(data => {
-            if (data.success) {
-                // Remove the old item clone
-                const oldClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
-                if (oldClone) {
+    fetch(`/update-position/${itemId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            'position_x': positionX,
+            'position_y': positionY,
+            'priority': priority
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the old item clone
+            const oldClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+            if (oldClone) {
                 oldClone.remove();
-                }
+            }
 
-                // Create a new item clone at the new position
-                const newClone = document.createElement('div');
-                newClone.classList.add('item-clone');
-                newClone.setAttribute('draggable', 'true');
-                newClone.setAttribute('data-id', itemId);
-                newClone.setAttribute('data-position-x', positionX);
-                newClone.setAttribute('data-position-y', positionY);
-                newClone.setAttribute('data-priority', priority);
-                newClone.style.left = `${positionX}%`;
-                newClone.style.top = `${positionY}%`;
-                newClone.style.transform = 'translate(-50%, -50%)';
-                newClone.innerHTML = `<strong>${document.querySelector(`.task-item[data-id="${itemId}"] strong`).innerText}</strong>`;
+            // Create a new item clone at the new position
+            const newClone = document.createElement('div');
+            newClone.classList.add('item-clone');
+            newClone.setAttribute('draggable', 'true');
+            newClone.setAttribute('data-id', itemId);
+            newClone.setAttribute('data-position-x', positionX);
+            newClone.setAttribute('data-position-y', positionY);
+            newClone.setAttribute('data-priority', priority);
+            newClone.style.left = `${positionX}%`;
+            newClone.style.top = `${positionY}%`;
+            newClone.style.transform = 'translate(-50%, -50%)';
+            newClone.innerHTML = `<strong>${document.querySelector(`.task-item[data-id="${itemId}"] strong`).innerText}</strong>`;
 
-                // Add drag and drop event listeners to the new item clone
-                newClone.addEventListener('dragstart', function(e) {
+            // Add drag and drop event listeners to the new item clone
+            newClone.addEventListener('dragstart', function(e) {
                 e.dataTransfer.setData("text/plain", e.target.innerText);
                 newClone.classList.add('dragging');
-                });
-                newClone.addEventListener('dragend', function() {
-                newClone.classList.remove('dragging');
-                });
-
-                // Append the new item clone to the target quadrant
-                const targetQuadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
-                targetQuadrant.appendChild(newClone);
-            } else {
-                alert('Error: ' + data.error);
-            }
-            })
-            .catch(error => {
-            alert('An unexpected error occurred while saving the item position.');
             });
+            newClone.addEventListener('dragend', function() {
+                newClone.classList.remove('dragging');
+            });
+
+            // Append the new item clone to the target quadrant
+            const targetQuadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+            targetQuadrant.appendChild(newClone);
+
+            // Update the assigned quadrant and button classes
+            updateAssignedQuadrant(itemId, priority);
+        } else {
+            alert('Error: ' + data.error);
         }
+    })
+    .catch(error => {
+        alert('An unexpected error occurred while saving the item position.');
+    });
+}
 
         // Function to load saved positions and priorities
         function loadSavedPositions() {
@@ -570,91 +572,95 @@
 
         // Function to update the assigned quadrant
         function updateAssignedQuadrant(itemId, priority) {
-            const assignedQuadrantElement = document.getElementById(`assigned-quadrant-${itemId}`);
-            if (assignedQuadrantElement) {
-            assignedQuadrantElement.innerText = `Assigned to: ${priority}`;
-            }
-        }
+    const assignedQuadrantElement = document.getElementById(`assigned-quadrant-${itemId}`);
+    if (assignedQuadrantElement) {
+        assignedQuadrantElement.innerText = `Assigned to: ${priority}`;
+    }
 
-        // Function to assign priority using buttons
-        function assignPriority(itemId, priority) {
-            // Send fetch request to update the priority of the task
-            fetch(`/update-priority/${itemId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                'priority': priority
-            })
-            })
-            .then(response => response.json())
-            .then(data => {
-            if (data.success) {
-                const taskItem = document.querySelector(`.task-item[data-id="${itemId}"]`);
-                const targetQuadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
-                
-                // Remove any existing clone of the task item
-                const existingClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
-                if (existingClone) {
+    const taskItem = document.querySelector(`.task-item[data-id="${itemId}"]`);
+    if (taskItem) {
+        updateButtonClasses(taskItem, priority);
+    }
+}
+
+function assignPriority(itemId, priority) {
+    // Send fetch request to update the priority of the task
+    fetch(`/update-priority/${itemId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            'priority': priority
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const taskItem = document.querySelector(`.task-item[data-id="${itemId}"]`);
+            const targetQuadrant = document.querySelector(`.task-list[data-priority="${priority}"]`);
+            
+            // Remove any existing clone of the task item
+            const existingClone = document.querySelector(`.item-clone[data-id="${itemId}"]`);
+            if (existingClone) {
                 existingClone.remove();
-                }
+            }
 
-                // Create a simple version of the task item
-                const simpleTaskItem = document.createElement('div');
-                simpleTaskItem.classList.add('item-clone');
-                simpleTaskItem.setAttribute('draggable', 'true');
-                simpleTaskItem.setAttribute('data-id', itemId);
-                simpleTaskItem.setAttribute('data-position-x', '50');
-                simpleTaskItem.setAttribute('data-position-y', '50');
-                simpleTaskItem.setAttribute('data-priority', priority);
-                simpleTaskItem.style.left = '50%';
-                simpleTaskItem.style.top = '50%';
-                simpleTaskItem.style.transform = 'translate(-50%, -50%)';
-                simpleTaskItem.innerHTML = `<strong>${taskItem.querySelector('strong').innerText}</strong>`;
-                
-                // Add drag and drop event listeners to the simple task item
-                simpleTaskItem.addEventListener('dragstart', function(e) {
+            // Create a simple version of the task item
+            const simpleTaskItem = document.createElement('div');
+            simpleTaskItem.classList.add('item-clone');
+            simpleTaskItem.setAttribute('draggable', 'true');
+            simpleTaskItem.setAttribute('data-id', itemId);
+            simpleTaskItem.setAttribute('data-position-x', '50');
+            simpleTaskItem.setAttribute('data-position-y', '50');
+            simpleTaskItem.setAttribute('data-priority', priority);
+            simpleTaskItem.style.left = '50%';
+            simpleTaskItem.style.top = '50%';
+            simpleTaskItem.style.transform = 'translate(-50%, -50%)';
+            simpleTaskItem.innerHTML = `<strong>${taskItem.querySelector('strong').innerText}</strong>`;
+            
+            // Add drag and drop event listeners to the simple task item
+            simpleTaskItem.addEventListener('dragstart', function(e) {
                 e.dataTransfer.setData("text/plain", e.target.innerText);
                 simpleTaskItem.classList.add('dragging');
-                });
-                simpleTaskItem.addEventListener('dragend', function() {
-                simpleTaskItem.classList.remove('dragging');
-                });
-
-                // Append the simple task item to the target quadrant
-                targetQuadrant.appendChild(simpleTaskItem);
-
-                // Mark the original task item with the selected quadrant
-                document.getElementById(`assigned-quadrant-${itemId}`).innerText = `Assigned to: ${priority}`;
-
-                // Update button classes
-                updateButtonClasses(taskItem, priority);
-
-                // Save the position and priority
-                savePosition(itemId, 50, 50, priority);
-            } else {
-                alert('Error: ' + data.error);
-            }
-            })
-            .catch(error => {
-            alert('An unexpected error occurred while updating the task priority.');
             });
+            simpleTaskItem.addEventListener('dragend', function() {
+                simpleTaskItem.classList.remove('dragging');
+            });
+
+            // Append the simple task item to the target quadrant
+            targetQuadrant.appendChild(simpleTaskItem);
+
+            // Mark the original task item with the selected quadrant
+            document.getElementById(`assigned-quadrant-${itemId}`).innerText = `Assigned to: ${priority}`;
+
+            // Update button classes
+            updateButtonClasses(taskItem, priority);
+
+            // Save the position and priority
+            savePosition(itemId, 50, 50, priority);
+        } else {
+            alert('Error: ' + data.error);
         }
+    })
+    .catch(error => {
+        alert('An unexpected error occurred while updating the task priority.');
+    });
+}
 
         function updateButtonClasses(taskItem, priority) {
             const buttons = taskItem.querySelectorAll('button');
             buttons.forEach(button => {
-                if (button.innerText.includes('Do First')) {
-                    button.className = priority === 'doFirst' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-                } else if (button.innerText.includes('Schedule')) {
-                    button.className = priority === 'schedule' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-                } else if (button.innerText.includes('Delegate')) {
-                    button.className = priority === 'delegate' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-                } else if (button.innerText.includes('Eliminate')) {
-                    button.className = priority === 'eliminate' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
-                }
+            if (button.innerText.includes('Do First')) {
+                button.className = priority === 'doFirst' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
+            } else if (button.innerText.includes('Schedule')) {
+                button.className = priority === 'schedule' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
+            } else if (button.innerText.includes('Delegate')) {
+                button.className = priority === 'delegate' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
+            } else if (button.innerText.includes('Eliminate')) {
+                button.className = priority === 'eliminate' ? 'btn btn-secondary btn-sm m-0 col-6' : 'btn btn-outline-secondary btn-sm m-0 col-6';
+            }
             });
         }
 
