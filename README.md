@@ -157,3 +157,6 @@
 ## Acknowledgements
 - Thanks to mentors and peers for feedback and testing contributions.
 - Special thanks to the Code Institute community for insights and inspiration.
+- Thanks to Spencer for fixing the "add new item and create a new list" function.
+- Thanks to John for helping with fixing the modal form issue when opened with a button within the empty state.
+- Thanks to Roo for helping with the 500 server error issue.
