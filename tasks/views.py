@@ -18,7 +18,6 @@ from .forms import CustomPasswordChangeForm, ItemListForm, ItemForm
 from .models import ItemList, Item, Profile
 import logging
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError  # Correct import for IntegrityError
 from django.utils.dateparse import parse_datetime
 
 logger = logging.getLogger(__name__)
@@ -43,26 +42,39 @@ def login_view(request):
     return render(request, 'tasks/login.html', {'form': form})
 
 def create_default_lists_and_tasks(user):
-    try:
-        # Check if the 'Work' list already exists
-        work_list, created = ItemList.objects.get_or_create(
-            name='Work', user=user
-        )
-        if created:
-            # Create default tasks for the 'Work' list if it was newly created
-            Item.objects.create(title='Task 1', item_list=work_list, user=user)
-            Item.objects.create(title='Task 2', item_list=work_list, user=user)
-    except IntegrityError:
-        logger.warning(f"Work list for user {user.username} already exists.")
+    if not ItemList.objects.filter(user=user).exists():
+        work_list = ItemList.objects.create(name='Work', user=user)
+        personal_list = ItemList.objects.create(name='Personal', user=user)
+        grocery_list = ItemList.objects.create(name='Grocery Shopping', user=user)
 
+        Item.objects.create(title='Finish project report', item_list=work_list)
+        Item.objects.create(title='Prepare presentation', item_list=work_list)
+        Item.objects.create(title='Call mom', item_list=personal_list)
+        Item.objects.create(title='Buy milk', item_list=grocery_list)
+        Item.objects.create(title='Buy bread', item_list=grocery_list)
 
 @login_required
 def dashboard_view(request):
-    create_default_lists_and_tasks(request.user)
-    items = Item.objects.filter(item_list__user=request.user)
-    item_lists_exist = ItemList.objects.filter(user=request.user).exists()
-    empty_state = not item_lists_exist and not items.exists()
-    return render(request, 'tasks/dashboard.html', {'items': items, 'empty_state': empty_state})
+    # Ensure the user has a profile
+    if not hasattr(request.user, 'profile'):
+        Profile.objects.create(user=request.user)
+    
+    # Check if the user is new and create default lists and tasks only for new accounts
+    if not request.user.profile.default_lists_created:
+        create_default_lists_and_tasks(request.user)
+        request.user.profile.default_lists_created = True
+        request.user.profile.save()
+    
+    items = Item.objects.filter(user=request.user)
+    item_lists = ItemList.objects.filter(user=request.user)  # Include all item lists
+    empty_state = not items.exists() and not item_lists.exists()
+
+    context = {
+        'items': items,
+        'item_lists': item_lists,
+        'empty_state': empty_state,
+    }
+    return render(request, 'tasks/dashboard.html', context)
 
 @login_required
 def account_view(request):

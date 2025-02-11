@@ -309,7 +309,7 @@
                 .then(data => {
                     if (data.success) {
                         var modal = bootstrap.Modal.getInstance(document.getElementById(
-                        'addTaskListModal'));
+                            'addTaskListModal'));
                         modal.hide();
                         location.reload(); // Reload the page to reflect changes
                     } else {
@@ -373,82 +373,82 @@
                 } else {
                     alert('No lists selected.');
                 }
-                
+
             });
         }
 
-            document.addEventListener('DOMContentLoaded', function () {
-                // Handle new list selection for single item form
-                document.getElementById('item_list').addEventListener('change', function () {
-                    var newListGroup = document.getElementById('new_list_group');
-                    console.log('Single item form list selection changed:', this.value);
-                    if (this.value === 'new') {
-                        newListGroup.style.display = 'block';
-                        document.getElementById('new_list_name').required = true;
-                    } else {
-                        newListGroup.style.display = 'none';
-                        document.getElementById('new_list_name').required = false;
-                    }
-                });
+        document.addEventListener('DOMContentLoaded', function () {
+            // Handle new list selection for single item form
+            document.getElementById('item_list').addEventListener('change', function () {
+                var newListGroup = document.getElementById('new_list_group');
+                console.log('Single item form list selection changed:', this.value);
+                if (this.value === 'new') {
+                    newListGroup.style.display = 'block';
+                    document.getElementById('new_list_name').required = true;
+                } else {
+                    newListGroup.style.display = 'none';
+                    document.getElementById('new_list_name').required = false;
+                }
+            });
 
-                // Handle new list selection for bulk item form
-                document.getElementById('bulk_item_list').addEventListener('change', function () {
-                    var bulkNewListGroup = document.getElementById('bulk_new_list_group');
-                    console.log('Bulk item form list selection changed:', this.value);
-                    if (this.value === 'new') {
-                        bulkNewListGroup.style.display = 'block';
-                        document.getElementById('bulk_new_list_name').required = true;
-                    } else {
-                        bulkNewListGroup.style.display = 'none';
-                        document.getElementById('bulk_new_list_name').required = false;
-                    }
-                });
+            // Handle new list selection for bulk item form
+            document.getElementById('bulk_item_list').addEventListener('change', function () {
+                var bulkNewListGroup = document.getElementById('bulk_new_list_group');
+                console.log('Bulk item form list selection changed:', this.value);
+                if (this.value === 'new') {
+                    bulkNewListGroup.style.display = 'block';
+                    document.getElementById('bulk_new_list_name').required = true;
+                } else {
+                    bulkNewListGroup.style.display = 'none';
+                    document.getElementById('bulk_new_list_name').required = false;
+                }
+            });
 
-                // Function to add multiple items
-                document.getElementById('bulk-add-item-form').addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    const titles = document.getElementById('bulk-item-titles').value.split('\n').filter(
-                        title => title.trim() !== '');
-                    const itemListId = document.getElementById('bulk_item_list').value;
-                    const newListName = document.getElementById('bulk_new_list_name').value;
+            // Function to add multiple items
+            document.getElementById('bulk-add-item-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const titles = document.getElementById('bulk-item-titles').value.split('\n').filter(
+                    title => title.trim() !== '');
+                const itemListId = document.getElementById('bulk_item_list').value;
+                const newListName = document.getElementById('bulk_new_list_name').value;
 
-                    fetch('/create_items/', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRFToken': '{{ csrf_token }}'
-                            },
-                            body: JSON.stringify({
-                                'titles': titles,
-                                'item_list': itemListId,
-                                'new_list_name': newListName
-                            })
+                fetch('/create_items/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            'titles': titles,
+                            'item_list': itemListId,
+                            'new_list_name': newListName
                         })
-                        .then(response => {
-                            console.log('Response:', response); // Log the response
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            console.log('Data:', data); // Log the data
-                            if (data.success) {
-                                const itemsList = document.getElementById('items-list');
-                                if (itemsList) {
-                                    data.items.forEach(item => {
-                                        const newItem = document.createElement('div');
-                                        newItem.classList.add('list-group-item', 'd-flex',
-                                            'justify-content-between',
-                                            'align-items-center', 'task-item');
-                                        newItem.setAttribute('draggable', 'true');
-                                        newItem.setAttribute('data-id', item.id);
-                                        newItem.setAttribute('data-position-x', '');
-                                        newItem.setAttribute('data-position-y', '');
-                                        newItem.setAttribute('data-priority', '');
-                                        newItem.setAttribute('data-order', '');
-                                        newItem.setAttribute('data-deadline', '');
-                                        newItem.innerHTML = `
+                    })
+                    .then(response => {
+                        console.log('Response:', response); // Log the response
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Data:', data); // Log the data
+                        if (data.success) {
+                            const itemsList = document.getElementById('items-list');
+                            if (itemsList) {
+                                data.items.forEach(item => {
+                                    const newItem = document.createElement('div');
+                                    newItem.classList.add('list-group-item', 'd-flex',
+                                        'justify-content-between',
+                                        'align-items-center', 'task-item');
+                                    newItem.setAttribute('draggable', 'true');
+                                    newItem.setAttribute('data-id', item.id);
+                                    newItem.setAttribute('data-position-x', '');
+                                    newItem.setAttribute('data-position-y', '');
+                                    newItem.setAttribute('data-priority', '');
+                                    newItem.setAttribute('data-order', '');
+                                    newItem.setAttribute('data-deadline', '');
+                                    newItem.innerHTML = `
                                 <div>
                                     <input type="checkbox" class="select-item me-2">
                                     <strong>${item.title}</strong> <br>
@@ -462,93 +462,122 @@
                                     <button class="btn btn-outline-secondary btn-sm" onclick="assignPriority('${item.id}', 'eliminate')">Eliminate</button>
                                 </div>
                             `;
-                                        itemsList.appendChild(newItem);
-                                    });
-                                    document.getElementById('bulk-add-item-form').reset();
-                                } else {
-                                    console.error('Element with ID "items-list" not found.');
-                                }
-
-                                // Close the modal
-                                var modal = bootstrap.Modal.getInstance(document.getElementById(
-                                    'addTaskModal'));
-                                modal.hide();
-
-                                // Reload the page to reflect changes
-                                location.reload();
+                                    itemsList.appendChild(newItem);
+                                });
+                                document.getElementById('bulk-add-item-form').reset();
                             } else {
-                                alert('Error: ' + data.error);
+                                console.error('Element with ID "items-list" not found.');
                             }
-                        })
-                        .catch(error => {
-                            console.error('Unexpected error:', error);
-                            alert('An unexpected error occurred while adding the items.');
-                        });
-                });
+
+                            // Close the modal
+                            var modal = bootstrap.Modal.getInstance(document.getElementById(
+                                'addTaskModal'));
+                            modal.hide();
+
+                            // Reload the page to reflect changes
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Unexpected error:', error);
+                        alert('An unexpected error occurred while adding the items.');
+                    });
             });
+        });
 
 
 
-            document.addEventListener("DOMContentLoaded", function () {
-                const form = document.getElementById("addTaskForm");
-                form.addEventListener("submit", function (event) {
-                    event.preventDefault(); // Stop normal form submission
-                    // Get CSRF Token for security
-                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                    // Gather form data
-                    let formData = {
-                        title: document.getElementById("title").value,
-                        description: document.getElementById("description").value,
-                        deadline: document.getElementById("deadline").value || null,
-                        item_list: document.getElementById("item_list").value,
-                        new_list_name: document.getElementById("new_list_name").value.trim()
-                    };
-                    // Ensure valid input
-                    if (!formData.title) {
-                        alert("Please enter a title.");
-                        return;
-                    }
-                    if (formData.item_list === "new" && !formData.new_list_name) {
-                        alert("Please enter a new list name.");
-                        return;
-                    }
-                    // Send AJAX request to create item
-                    fetch("{% url 'create_item' %}", {
-                            method: "POST",
-                            body: JSON.stringify(formData),
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRFToken": csrfToken
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Close modal
-                                const modal = bootstrap.Modal.getInstance(document.getElementById(
-                                    "addTaskModal"));
-                                modal.hide();
-                                // Reload dashboard content dynamically
-                                location.reload();
-                            } else {
-                                alert("Error: " + data.error);
-                            }
-                        })
-                        .catch(error => console.error("Error:", error));
-                });
-                // Show/hide new list input field dynamically
-                document.getElementById("item_list").addEventListener("change", function () {
-                    const newListGroup = document.getElementById("new_list_group");
-                    if (this.value === "new") {
-                        newListGroup.style.display = "block";
-                        document.getElementById("new_list_name").required = true;
-                    } else {
-                        newListGroup.style.display = "none";
-                        document.getElementById("new_list_name").required = false;
-                    }
-                });
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("addTaskForm");
+            form.addEventListener("submit", function (event) {
+                event.preventDefault(); // Stop normal form submission
+                // Get CSRF Token for security
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                // Gather form data
+                let formData = {
+                    title: document.getElementById("title").value,
+                    description: document.getElementById("description").value,
+                    deadline: document.getElementById("deadline").value || null,
+                    item_list: document.getElementById("item_list").value,
+                    new_list_name: document.getElementById("new_list_name").value.trim()
+                };
+                // Ensure valid input
+                if (!formData.title) {
+                    alert("Please enter a title.");
+                    return;
+                }
+                if (formData.item_list === "new" && !formData.new_list_name) {
+                    alert("Please enter a new list name.");
+                    return;
+                }
+                // Send AJAX request to create item
+                fetch("{% url 'create_item' %}", {
+                        method: "POST",
+                        body: JSON.stringify(formData),
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrfToken
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Close modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById(
+                                "addTaskModal"));
+                            modal.hide();
+                            // Reload dashboard content dynamically
+                            location.reload();
+                        } else {
+                            alert("Error: " + data.error);
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
             });
-        
-            </script>
-    </body>
-    </html>
+            // Show/hide new list input field dynamically
+            document.getElementById("item_list").addEventListener("change", function () {
+                const newListGroup = document.getElementById("new_list_group");
+                if (this.value === "new") {
+                    newListGroup.style.display = "block";
+                    document.getElementById("new_list_name").required = true;
+                } else {
+                    newListGroup.style.display = "none";
+                    document.getElementById("new_list_name").required = false;
+                }
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+    function connectWebSocket() {
+        const notificationSocket = new WebSocket(
+            (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/ws/notifications/"
+        );
+
+        notificationSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            const message = `New item: ${data.title}`;
+            const messagesDiv = document.getElementById("messages");
+
+            if (messagesDiv) {
+                const messageElement = document.createElement("div");
+                messageElement.className = "alert alert-info";
+                messageElement.textContent = message;
+                messagesDiv.appendChild(messageElement);
+            }
+        };
+
+        notificationSocket.onclose = function () {
+            console.error("WebSocket closed unexpectedly. Reconnecting...");
+            setTimeout(connectWebSocket, 3000); // Reconnect after 3 seconds
+        };
+    }
+
+    connectWebSocket();
+});
+
+    </script>
+</body>
+
+</html>

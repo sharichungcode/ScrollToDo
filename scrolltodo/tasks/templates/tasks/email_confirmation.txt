@@ -1,6 +1,0 @@
-Hi {{ user.username }},
-
-Your email address has been successfully changed to {{ user.email }}.
-
-Best regards,
-ScrollToDo Team

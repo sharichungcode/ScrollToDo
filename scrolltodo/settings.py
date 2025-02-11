@@ -14,10 +14,15 @@ from pathlib import Path
 import os
 import dj_database_url
 import django_heroku
+import sys
+
+# Add the new path to sys.path
+sys.path.append('/Users/sharichung/Documents/Code Institute/ScrollToDo/scrolltodo')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+print("BASE_DIR:", BASE_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -48,7 +53,11 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.facebook',
+    'channels',
+    'daphne',
 ]
+
+print("INSTALLED_APPS:", INSTALLED_APPS)
 
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -81,6 +90,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'scrolltodo.wsgi.application'
+ASGI_APPLICATION = 'scrolltodo.asgi.application'
 
 
 # Database
@@ -133,11 +143,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Ensure STATICFILES_DIRS is correctly set
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-
 # Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -167,6 +172,14 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'scrolltodo.team@gmail.com'  # Your Gmail address
 EMAIL_HOST_PASSWORD = 'qdddxqturrjokqmu'  # Your Gmail password or App Password
 DEFAULT_FROM_EMAIL = 'scrolltodo.team@gmail.com'  # Your Gmail address
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
+
+print("Python Path:", sys.path)
 
 # Activate Django-Heroku.
 django_heroku.settings(locals())
