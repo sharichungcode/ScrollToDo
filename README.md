@@ -1,4 +1,23 @@
 # ScrollToDo
+ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.
+
+## Previous Version Screenshots
+
+### Screenshot 1
+![Screenshot 1](media/IMG_4693.PNG)
+
+### Screenshot 2
+![Screenshot 2](media/IMG_4694.PNG)
+
+### Screenshot 3
+![Screenshot 3](media/IMG_4695.PNG)
+
+### Screenshot 4
+![Screenshot 4](media/IMG_4697.PNG)
+
+### Screenshot 5
+![Screenshot 5](media/item_none.png)
+
 [Deployed Website](https://scroll-to-do-fc37dc092ebb.herokuapp.com/)
 
 ## User Experience
