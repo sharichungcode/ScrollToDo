@@ -88,10 +88,14 @@
 
 ## AI Implementation and Orchestration
 ### Use Cases & Reflections
-- **Code Creation:** AI-assisted development for rapid prototyping.
-- **Debugging:** AI-aided troubleshooting.
-- **Performance Optimization:** AI-driven suggestions for speed and efficiency.
-- **Automated Testing:** AI-generated unit tests with manual refinements.
+- **Code Creation:** AI-assisted development for rapid prototyping. AI helped speed up the process of creating database models by suggesting structure based on requirements.
+- **Debugging:** AI-aided troubleshooting. AI assisted in identifying an issue with the model relationships, suggesting a fix that prevented database inconsistencies.
+- **Performance Optimization:** AI-driven suggestions for speed and efficiency. AI suggested optimizing database queries, which resulted in a significant reduction in load time.
+- **Automated Testing:** AI-generated unit tests with manual refinements. Copilot suggested test cases based on the application logic, which were then adjusted for accuracy.
+
+### Insights into AI’s Impact on Workflow
+- **Efficiency Gains:** AI improved the overall development process by saving time and providing useful suggestions that were not initially considered. This led to a more efficient and streamlined workflow.
+
 
 ## Testing
 ### Manual Testing
@@ -99,11 +103,7 @@
   - Chrome, Firefox, Safari, Edge
   - Mobile, tablet, and desktop responsiveness tested
   - Screen reader & keyboard navigation testing conducted
-
-### Automated Testing
-- **Tools Used:** Django TestCase / Jest / Cypress
-- **Features Covered:**
-  - Task prioritization, user authentication, analytics tracking
+  - Task prioritization, user authentication
 
 ## Technologies Used
 - **Frontend:** HTML, CSS, JavaScript, Bootstrap
@@ -111,6 +111,44 @@
 - **Database:** PostgreSQL
 - **Hosting:** Heroku
 - **Version Control:** GitHub
+
+## System Requirements
+- **Python Version:** 3.8 or higher
+- **Required Packages:** Listed in `requirements.txt`
+
+## Setting up the Application
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/sharichungcode/ScrollToDo.git
+   cd ScrollToDo
+   ```
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Set up the database:**
+   ```bash
+   python manage.py migrate
+   ```
+4. **Run the server:**
+   ```bash
+   python manage.py runserver
+   ```
+
+## Deployment Process
+### Heroku Deployment
+1. **Set up the environment:**
+   - Create a new Heroku app.
+   - Set environment variables in the Heroku dashboard.
+2. **Deployment commands:**
+   ```bash
+   heroku login
+   heroku git:remote -a scroll-to-do
+   git push heroku main
+   ```
+3. **Configuration:**
+   - Ensure all necessary environment variables are set in Heroku.
+   - Disable debug mode for production.
 
 ## Credits
 - AI-assisted suggestions refined for UX and accessibility.
