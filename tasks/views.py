@@ -47,11 +47,11 @@ def create_default_lists_and_tasks(user):
         personal_list = ItemList.objects.create(name='Personal', user=user)
         grocery_list = ItemList.objects.create(name='Grocery Shopping', user=user)
 
-        Item.objects.create(title='Finish project report', item_list=work_list)
-        Item.objects.create(title='Prepare presentation', item_list=work_list)
-        Item.objects.create(title='Call mom', item_list=personal_list)
-        Item.objects.create(title='Buy milk', item_list=grocery_list)
-        Item.objects.create(title='Buy bread', item_list=grocery_list)
+        Item.objects.create(user=user, title='Finish project report', item_list=work_list)
+        Item.objects.create(user=user, title='Prepare presentation', item_list=work_list)
+        Item.objects.create(user=user, title='Call mom', item_list=personal_list)
+        Item.objects.create(user=user, title='Buy milk', item_list=grocery_list)
+        Item.objects.create(user=user, title='Buy bread', item_list=grocery_list)
 
 @login_required
 def dashboard_view(request):
