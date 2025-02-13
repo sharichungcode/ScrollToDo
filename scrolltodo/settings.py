@@ -16,6 +16,9 @@ import dj_database_url
 import django_heroku
 import sys
 
+if os.path.isfile('env.py'):
+    import env
+
 # Add the new path to sys.path
 sys.path.append('/Users/sharichung/Documents/Code Institute/ScrollToDo/scrolltodo')
 
@@ -28,7 +31,7 @@ print("BASE_DIR:", BASE_DIR)
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5t43p9vbe*ltw$+)%4_&bj3v+r@xfl6^1h2j_ic&g&+^sn6%o2'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -96,15 +99,10 @@ ASGI_APPLICATION = 'scrolltodo.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=(
-            'postgresql://neondb_owner:npg_4In7eJrqsVCb@ep-cold-tree-a2igf0x8.'
-            'eu-central-1.aws.neon.tech/robin_uncle_iron_518628'
-        )
-    )
-}
 
+DATABASES = {
+    'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
