@@ -34,10 +34,10 @@ print("BASE_DIR:", BASE_DIR)
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Allow all host headers
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['scroll-to-do-fc37dc092ebb.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
