@@ -2,6 +2,7 @@
 ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.
 
 [Deployed Website](https://scroll-to-do-fc37dc092ebb.herokuapp.com/)
+![Responsive device mockup scene](media/Responsive%20device%20mockup%20scene.png)
 
 ## User Experience
 ### Purpose
@@ -84,9 +85,9 @@ ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.
 
 ### Task Prioritization
 - **Linear Ranking:** Drag-and-drop interface for ranking tasks.
-- **Matrix Prioritization:** A 2x2 grid for sorting tasks based on urgency and importance.
+- **Matrix Prioritization:** A 2x2 grid for sorting tasks based on impact and effort.
 
-### Progress Tracking
+### Progress Tracking (Next Phase)
 - Tasks can be marked as completed, providing a clear visual distinction.
 - A simple analytics dashboard summarizes progress.
 
@@ -98,6 +99,8 @@ ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.
 ## Database
 - PostgreSQL was used as the database for storing user tasks securely.
 - Entity-relationship diagrams (ERD) were created during the planning phase.
+### Entity-Relationship Diagram
+![Entity-Relationship Diagram](media/ERD.png)
 
 ## Deployment
 - **Platform:** Heroku
@@ -110,10 +113,10 @@ ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.
 
 ## AI Implementation and Orchestration
 ### Use Cases & Reflections
-- **Code Creation:** AI-assisted development for rapid prototyping. AI helped speed up the process of creating database models by suggesting structure based on requirements.
-- **Debugging:** AI-aided troubleshooting. AI assisted in identifying an issue with the model relationships, suggesting a fix that prevented database inconsistencies.
+- **Code Creation:** AI-assisted development for rapid prototyping. Both VS Code Copilot and ChatGPT helped speed up the process of creating database models by suggesting structure based on requirements.
+- **Debugging:** AI-aided troubleshooting. VS Code Copilot and ChatGPT assisted in identifying an issue with the model relationships, suggesting a fix that prevented database inconsistencies.
 - **Performance Optimization:** AI-driven suggestions for speed and efficiency. AI suggested optimizing database queries, which resulted in a significant reduction in load time.
-- **Automated Testing:** AI-generated unit tests with manual refinements. Copilot suggested test cases based on the application logic, which were then adjusted for accuracy.
+- **Automated Testing:** AI-generated unit tests with manual refinements. VS Code Copilot suggested test cases based on the application logic, which were then adjusted for accuracy.
 
 ### Insights into AI’s Impact on Workflow
 - **Efficiency Gains:** AI improved the overall development process by saving time and providing useful suggestions that were not initially considered. This led to a more efficient and streamlined workflow.
@@ -124,8 +127,7 @@ ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.
 - **Devices & Browsers Tested:**
   - Chrome, Firefox, Safari, Edge
   - Mobile, tablet, and desktop responsiveness tested
-  - Screen reader & keyboard navigation testing conducted
-  - Task prioritization, user authentication
+  - Task prioritization (List & Matrix), user authentication
 
 ## Technologies Used
 - **Frontend:** HTML, CSS, JavaScript, Bootstrap
@@ -172,8 +174,25 @@ ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.
    - Ensure all necessary environment variables are set in Heroku.
    - Disable debug mode for production.
 
+## Future Enhancements
+### Planned Features
+- **Collaboration Tools:** Allow multiple users to collaborate on task lists in real-time.
+- **Advanced Analytics:** Provide detailed insights and reports on task completion and productivity trends.
+- **Integration with Calendar Apps:** Sync tasks with popular calendar applications like Google Calendar and Outlook.
+- **Voice Commands:** Implement voice recognition for hands-free task management.
+- **Offline Mode:** Enable task management without an internet connection, with automatic syncing when back online.
+
+### User Feedback
+- **User Surveys:** Regularly conduct user surveys to gather feedback and identify areas for improvement. [Provide your feedback here](https://forms.gle/kG6HUV48LChtmN62A).
+
+
+### Code of Conduct
+- Be respectful and considerate in all interactions.
+- Provide constructive feedback and be open to receiving it.
+- Follow the project's coding standards and guidelines.
+
 ## Credits
-- AI-assisted suggestions refined for UX and accessibility.
+- AI-assisted suggestions refined for UX and accessibility, with significant contributions from ChatGPT and VS Code Copilot.
 - Various online tutorials helped in implementing the prioritization logic.
 
 ## Acknowledgements
