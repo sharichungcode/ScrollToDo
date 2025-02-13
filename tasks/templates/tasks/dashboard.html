@@ -62,7 +62,7 @@
                             <div class="d-flex justify-content-between align-items-center w-100">
                                 <div class="px-3 w-100">
                                     <h5 class="fw-bold">{{ item_list.name }}</h5>
-                                    <small class="text-muted">{{ item_list.item_set.count }} items remaining</small>
+                                    <small class="text-muted">{{ item_list.item_set.count }} items</small>
                                     <div class="progress mt-2" style="height: 8px;">
                                         <div class="progress-bar bg-success"
                                             style="width: {{ item_list.progress|default:'0' }}%;"></div>
@@ -75,6 +75,7 @@
                 </div>
                 {% endfor %}
             </div>
+            </section>
             {% else %}
             {% endif %}
     </div>
@@ -85,14 +86,13 @@
     <!-- Empty State for No Items or Item Lists -->
     {% if empty_state %}
     <div class="container text-center mt-5">
-        <img src="{% get_media_prefix %}item_none.png" alt="No Items" class="img-fluid mb-3" style="max-width: 200px;">
         <h4 class="fw-bold">No Items or Item Lists Found</h4>
         <p class="text-muted">You haven't created any items or item lists yet. Start by creating a new item or item
             list.</p>
-        <button class="btn btn-primary mb-2 mb-md-0 mx-md-2" data-bs-toggle="modal" data-bs-target="#addTaskModal"><i
-                class="fas fa-plus"></i> Add Item</button>
-        <button class="btn btn-outline-secondary mb-2 mb-md-0 mx-md-2" data-bs-toggle="modal"
-            data-bs-target="#addTaskListModal"><i class="fas fa-folder-plus"></i> Add Item List</button>
+            <div class="d-flex flex-column flex-md-row justify-content-center d-none d-md-flex">
+                <button class="btn btn-primary mb-2 mb-md-0 mx-md-2" data-bs-toggle="modal" data-bs-target="#addTaskModal"><i class="fas fa-plus"></i> Add Item</button>
+                <button class="btn btn-outline-secondary mb-2 mb-md-0 mx-md-2" data-bs-toggle="modal" data-bs-target="#addTaskListModal"><i class="fas fa-folder-plus"></i> Add Item List</button>
+            </div>
         {% endif %}
     </div>
 
@@ -106,7 +106,7 @@
                             aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <ul class="nav nav-tabs" id="addItemTab" role="tablist">
+                    <ul class="nav nav-tabs mb-2" id="addItemTab" role="tablist">
                         <li class="nav-item" role="presentation">
                             <a class="nav-link active" id="single-item-tab" data-bs-toggle="tab" href="#single-item"
                                 role="tab" aria-controls="single-item" aria-selected="true">Single Item</a>

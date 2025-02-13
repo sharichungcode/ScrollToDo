@@ -120,7 +120,7 @@ def change_password_view(request):
             messages.success(request, 'Your password has been updated successfully.')
             return redirect('account')
         else:
-            messages.error(request, 'Failed to update password. Please try again.')
+            pass
     else:
         form = CustomPasswordChangeForm(request.user)
     return render(request, 'tasks/change_password.html', {'form': form})
