@@ -1,23 +1,6 @@
 # ScrollToDo
 ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.
 
-## Previous Version Screenshots
-
-### Screenshot 1
-![Screenshot 1](media/IMG_4693.PNG)
-
-### Screenshot 2
-![Screenshot 2](media/IMG_4694.PNG)
-
-### Screenshot 3
-![Screenshot 3](media/IMG_4695.PNG)
-
-### Screenshot 4
-![Screenshot 4](media/IMG_4697.PNG)
-
-### Screenshot 5
-![Screenshot 5](media/item_none.png)
-
 [Deployed Website](https://scroll-to-do-fc37dc092ebb.herokuapp.com/)
 
 ## User Experience
@@ -64,7 +47,7 @@ ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.
 
 ## Design
 ### Wireframes
-- [Click here for design wireframe](#)
+![Mobile first Wireframe](/media/wireframes.png)
 
 ### Colour Scheme
 - A modern, minimalistic theme with high-contrast colors for accessibility.
@@ -72,7 +55,27 @@ ScrollToDo helps you effortlessly organize, prioritize, and conquer your tasks.
 
 ### Typography
 - Google Fonts were used to ensure readability and aesthetic appeal.
-- A combination of sans-serif fonts was chosen for clarity and accessibility.
+- **Body Text:** The 'Roboto' font was chosen for its clarity and modern look.
+  ```css
+  body {
+      font-family: 'Roboto', sans-serif;
+      color: var(--dark-gray);
+      background-color: var(--light-gray);
+  }
+  ```
+- **Headings and Buttons:** The 'Inter' font was selected for headings and buttons to provide a strong visual hierarchy.
+  ```css
+  h1, h2, h3, h4, h5, h6, .btn {
+      font-family: 'Inter', sans-serif;
+  }
+  ```
+- **Numbers and Analytics:** The 'Space Mono' font was used for numbers and analytics to ensure a clear and distinct presentation.
+  ```css
+  .numbers, .analytics {
+      font-family: 'Space Mono', monospace;
+  }
+  ```
+- The combination of these fonts enhances both clarity and accessibility across the application.
 
 ## Features
 ### Homepage

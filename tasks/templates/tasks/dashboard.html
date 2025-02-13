@@ -549,34 +549,6 @@
             });
         });
 
-        document.addEventListener("DOMContentLoaded", function () {
-    function connectWebSocket() {
-        const notificationSocket = new WebSocket(
-            (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/ws/notifications/"
-        );
-
-        notificationSocket.onmessage = function (e) {
-            const data = JSON.parse(e.data);
-            const message = `New item: ${data.title}`;
-            const messagesDiv = document.getElementById("messages");
-
-            if (messagesDiv) {
-                const messageElement = document.createElement("div");
-                messageElement.className = "alert alert-info";
-                messageElement.textContent = message;
-                messagesDiv.appendChild(messageElement);
-            }
-        };
-
-        notificationSocket.onclose = function () {
-            console.error("WebSocket closed unexpectedly. Reconnecting...");
-            setTimeout(connectWebSocket, 3000); // Reconnect after 3 seconds
-        };
-    }
-
-    connectWebSocket();
-});
-
     </script>
 </body>
 

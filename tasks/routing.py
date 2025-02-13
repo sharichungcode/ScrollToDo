@@ -2,6 +2,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.urls import re_path
 
+
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
@@ -16,6 +17,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'message': message
         }))
+
 
 websocket_urlpatterns = [
     re_path(r"ws/notifications/$", NotificationConsumer.as_asgi()),

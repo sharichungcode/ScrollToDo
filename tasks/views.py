@@ -1,4 +1,3 @@
-import requests
 import json
 import smtplib
 import ssl
@@ -10,11 +9,9 @@ from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from .forms import CustomPasswordChangeForm, ItemListForm, ItemForm
+from .forms import CustomPasswordChangeForm, ItemListForm
 from .models import ItemList, Item, Profile
 import logging
 from django.core.exceptions import ValidationError
@@ -22,8 +19,10 @@ from django.utils.dateparse import parse_datetime
 
 logger = logging.getLogger(__name__)
 
+
 def index(request):
     return render(request, 'tasks/index.html')
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -41,17 +40,31 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'tasks/login.html', {'form': form})
 
+
 def create_default_lists_and_tasks(user):
     if not ItemList.objects.filter(user=user).exists():
         work_list = ItemList.objects.create(name='Work', user=user)
         personal_list = ItemList.objects.create(name='Personal', user=user)
-        grocery_list = ItemList.objects.create(name='Grocery Shopping', user=user)
+        grocery_list = ItemList.objects.create(
+            name='Grocery Shopping', user=user
+        )
 
-        Item.objects.create(user=user, title='Finish project report', item_list=work_list)
-        Item.objects.create(user=user, title='Prepare presentation', item_list=work_list)
-        Item.objects.create(user=user, title='Call mom', item_list=personal_list)
-        Item.objects.create(user=user, title='Buy milk', item_list=grocery_list)
-        Item.objects.create(user=user, title='Buy bread', item_list=grocery_list)
+        Item.objects.create(
+            user=user, title='Finish project report', item_list=work_list
+        )
+        Item.objects.create(
+            user=user, title='Prepare presentation', item_list=work_list
+        )
+        Item.objects.create(
+            user=user, title='Call mom', item_list=personal_list
+        )
+        Item.objects.create(
+            user=user, title='Buy milk', item_list=grocery_list
+        )
+        Item.objects.create(
+            user=user, title='Buy bread', item_list=grocery_list
+        )
+
 
 @login_required
 def dashboard_view(request):
@@ -59,14 +72,17 @@ def dashboard_view(request):
     if not hasattr(request.user, 'profile'):
         Profile.objects.create(user=request.user)
     
-    # Check if the user is new and create default lists and tasks only for new accounts
+    # Check if the user is new and create default lists and tasks 
+    # only for new accounts
     if not request.user.profile.default_lists_created:
         create_default_lists_and_tasks(request.user)
         request.user.profile.default_lists_created = True
         request.user.profile.save()
     
     items = Item.objects.filter(user=request.user)
-    item_lists = ItemList.objects.filter(user=request.user)  # Include all item lists
+    item_lists = ItemList.objects.filter(
+        user=request.user
+    )  # Include all item lists
     empty_state = not items.exists() and not item_lists.exists()
 
     context = {
@@ -75,6 +91,7 @@ def dashboard_view(request):
         'empty_state': empty_state,
     }
     return render(request, 'tasks/dashboard.html', context)
+
 
 @login_required
 def account_view(request):
@@ -85,13 +102,19 @@ def account_view(request):
             user.email = new_email
             user.save()
             send_confirmation_email(user)
-            messages.success(request, 'Account details updated successfully. A confirmation email has been sent to your new email address. Please check your email.')
+            messages.success(
+                request, 
+                'Account details updated successfully. '
+                'A confirmation email has been sent to your new email address. '
+                'Please check your email.'
+            )
         else:
             user.username = request.POST.get('username')
             user.save()
             messages.success(request, 'Account details updated successfully.')
         return redirect('account')
     return render(request, 'tasks/account.html')
+
 
 def send_confirmation_email(user):
     subject = 'Email Address Change Confirmation'
@@ -108,7 +131,10 @@ def send_confirmation_email(user):
     with smtplib.SMTP('smtp.gmail.com', 587) as server:
         server.starttls(context=context)
         server.login(from_email, 'qdddxqturrjokqmu')
-        server.sendmail(from_email, recipient_list, f"Subject: {subject}\n\n{message}")
+        server.sendmail(
+            from_email, recipient_list, f"Subject: {subject}\n\n{message}"
+        )
+
 
 @login_required
 def change_password_view(request):
@@ -116,8 +142,11 @@ def change_password_view(request):
         form = CustomPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)  # Important to keep the user logged in
-            messages.success(request, 'Your password has been updated successfully.')
+            # Important to keep the user logged in
+            update_session_auth_hash(request, user)
+            messages.success(
+                request, 'Your password has been updated successfully.'
+            )
             return redirect('account')
         else:
             pass
@@ -125,10 +154,12 @@ def change_password_view(request):
         form = CustomPasswordChangeForm(request.user)
     return render(request, 'tasks/change_password.html', {'form': form})
 
+
 @login_required
 def logout_view(request):
     auth_logout(request)
     return redirect('index')
+
 
 @csrf_exempt
 def ajax_auth_view(request):
@@ -139,17 +170,29 @@ def ajax_auth_view(request):
         if user is not None:
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
-            return JsonResponse({'success': True, 'redirect_url': '/dashboard/'})
+            return JsonResponse({
+                'success': True,
+                'redirect_url': '/dashboard/'
+            })
         else:
             # If user does not exist, create a new user
             if not User.objects.filter(email=email).exists():
-                user = User.objects.create_user(username=email, email=email, password=password)
+                user = User.objects.create_user(
+                    username=email, email=email, password=password
+                )
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
-                return JsonResponse({'success': True, 'redirect_url': '/dashboard/'})
+                return JsonResponse({
+                    'success': True,
+                    'redirect_url': '/dashboard/'
+                })
             else:
-                return JsonResponse({'success': False, 'error': 'Invalid email or password'})
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Invalid email or password'
+                })
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
 
 @login_required
 def create_item_list_view(request):
@@ -187,6 +230,7 @@ def create_item_list_view(request):
 
     return render(request, 'tasks/create_item_list.html')
 
+
 @login_required
 def create_item_view(request):
     if request.method == "POST":
@@ -202,13 +246,20 @@ def create_item_view(request):
             if deadline:
                 deadline = parse_datetime(deadline)
                 if not deadline:
-                    return JsonResponse({"success": False, "error": "Invalid date format."})
+                    return JsonResponse({
+                        "success": False, 
+                        "error": "Invalid date format."
+                    })
 
             # Determine the correct item list
             if new_list_name:
-                item_list = ItemList.objects.create(name=new_list_name, user=request.user)
+                item_list = ItemList.objects.create(
+                    name=new_list_name, user=request.user
+                )
             else:
-                item_list = get_object_or_404(ItemList, id=item_list_id, user=request.user)
+                item_list = get_object_or_404(
+                    ItemList, id=item_list_id, user=request.user
+                )
 
             # Create the item
             item = Item.objects.create(
@@ -230,9 +281,15 @@ def create_item_view(request):
             })
 
         except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)}, status=400)
+            return JsonResponse(
+                {"success": False, "error": str(e)}, status=400
+            )
 
-    return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
+    return JsonResponse(
+        {"success": False, "error": "Invalid request method"}, 
+        status=405
+    )
+
 
 @login_required
 def create_items_view(request):
@@ -245,22 +302,36 @@ def create_items_view(request):
             item_list = None
 
             if new_list_name:
-                item_list = ItemList.objects.create(name=new_list_name, user=request.user)
+                item_list = ItemList.objects.create(
+                    name=new_list_name, user=request.user
+                )
             else:
-                item_list = get_object_or_404(ItemList, id=item_list_id, user=request.user)
+                item_list = get_object_or_404(
+                    ItemList, id=item_list_id, user=request.user
+                )
 
             items = []
             for title in titles:
-                item = Item.objects.create(title=title, item_list=item_list, user=request.user)
+                item = Item.objects.create(
+                    title=title, 
+                    item_list=item_list, 
+                    user=request.user
+                )
                 items.append({'id': item.id, 'title': item.title})
             return JsonResponse({'success': True, 'items': items})
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+            return JsonResponse(
+                {'success': False, 'error': str(e)}, status=400
+            )
+    return JsonResponse(
+        {'success': False, 'error': 'Invalid request method'}, status=405
+    )
+
 
 def item_classification_view(request):
     # Your view logic here
     return render(request, 'tasks/item_classification.html')
+
 
 @csrf_exempt  # Remove this if CSRF middleware is enabled
 def create_item_list(request):
@@ -270,20 +341,40 @@ def create_item_list(request):
             new_list_name = data.get("name", "").strip()
 
             if len(new_list_name) < 3:
-                return JsonResponse({"success": False, "error": "List name must be at least 3 characters."}, status=400)
+                return JsonResponse(
+                    {"success": False, "error": "List name must be at least 3 characters."},
+                    status=400
+                )
 
             # Prevent duplicate lists
-            existing_list = ItemList.objects.filter(name=new_list_name, user=request.user).first()
+            existing_list = ItemList.objects.filter(
+                name=new_list_name, user=request.user
+            ).first()
             if existing_list:
-                return JsonResponse({"success": True, "list_id": existing_list.id}, status=200)
+                return JsonResponse(
+                    {"success": True, "list_id": existing_list.id},
+                    status=200
+                )
 
-            new_list = ItemList.objects.create(name=new_list_name, user=request.user)
+            new_list = ItemList.objects.create(
+                name=new_list_name, user=request.user
+            )
 
-            return JsonResponse({"success": True, "list_id": new_list.id}, status=201)
+            return JsonResponse(
+                {"success": True, "list_id": new_list.id},
+                status=201
+            )
 
         except json.JSONDecodeError:
-            return JsonResponse({"success": False, "error": "Invalid JSON format."}, status=400)
-    return JsonResponse({"success": False, "error": "Invalid request method."}, status=405)
+            return JsonResponse(
+                {"success": False, "error": "Invalid JSON format."},
+                status=400
+            )
+    return JsonResponse(
+        {"success": False, "error": "Invalid request method."},
+        status=405
+    )
+
 
 @login_required
 def item_list_detail_view(request, list_id):
@@ -291,7 +382,9 @@ def item_list_detail_view(request, list_id):
     items = item_list.item_set.all()
     completed_items = items.filter(completed=True).count()
     total_items = items.count()
-    completion_percentage = (completed_items / total_items) * 100 if total_items > 0 else 0
+    completion_percentage = (
+        (completed_items / total_items) * 100 if total_items > 0 else 0
+    )
 
     if request.method == 'POST':
         if 'edit_list' in request.POST:
@@ -312,6 +405,7 @@ def item_list_detail_view(request, list_id):
         'form': form
     })
 
+
 @login_required
 def delete_selected_lists_view(request):
     if request.method == 'POST':
@@ -319,18 +413,25 @@ def delete_selected_lists_view(request):
             data = json.loads(request.body)
             selected_lists = data.get('selected_lists', [])
         except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'error': 'Invalid JSON data.'})
+            return JsonResponse(
+                {'success': False, 'error': 'Invalid JSON data.'}
+            )
 
         if not selected_lists:
-            return JsonResponse({'success': False, 'error': 'No lists selected.'})
+            return JsonResponse(
+                {'success': False, 'error': 'No lists selected.'}
+            )
 
         for list_id in selected_lists:
-            item_list = get_object_or_404(ItemList, id=list_id, user=request.user)
+            item_list = get_object_or_404(
+                ItemList, id=list_id, user=request.user
+            )
             item_list.delete()
 
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
 
 @csrf_exempt
 @login_required
@@ -343,10 +444,16 @@ def update_priority_view(request, item_id):
             item.save()
             return JsonResponse({'success': True})
         except Item.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
+            return JsonResponse(
+                {'success': False, 'error': 'Item not found'}, status=404
+            )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+            return JsonResponse(
+                {'success': False, 'error': str(e)}, status=500
+            )
+    return JsonResponse(
+        {'success': False, 'error': 'Invalid request method'}, status=405
+    )
     
 
 @login_required
@@ -375,16 +482,27 @@ def update_position_view(request, item_id):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
+
 @login_required
 def delete_item_view(request, item_id):
     if request.method == 'DELETE':
         try:
             item = get_object_or_404(Item, id=item_id, user=request.user)
             item.delete()
-            return JsonResponse({'success': True, 'message': 'Item deleted successfully.'})
+            return JsonResponse({
+                'success': True, 
+                'message': 'Item deleted successfully.'
+            })
         except Item.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Item not found.'}, status=404)
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+            return JsonResponse({
+                'success': False, 
+                'error': 'Item not found.'
+            }, status=404)
+    return JsonResponse({
+        'success': False, 
+        'error': 'Invalid request method.'
+    }, status=405)
+
 
 @csrf_exempt
 @login_required
@@ -397,8 +515,13 @@ def delete_items(request):
             items.delete()
             return JsonResponse({'success': True})
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+            return JsonResponse(
+                {'success': False, 'error': str(e)}, status=500
+            )
+    return JsonResponse(
+        {'success': False, 'error': 'Invalid request method'}, status=405
+    )
+
 
 @csrf_exempt
 @login_required
@@ -411,10 +534,17 @@ def update_in_matrix(request, item_id):
             item.save()
             return JsonResponse({'success': True})
         except Item.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
+            return JsonResponse(
+                {'success': False, 'error': 'Item not found'}, status=404
+            )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+            return JsonResponse(
+                {'success': False, 'error': str(e)}, status=500
+            )
+    return JsonResponse(
+        {'success': False, 'error': 'Invalid request method'}, status=405
+    )
+
 
 @csrf_exempt
 @login_required
@@ -429,10 +559,17 @@ def remove_item_clone(request, item_id):
             item.save()
             return JsonResponse({'success': True})
         except Item.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
+            return JsonResponse(
+                {'success': False, 'error': 'Item not found'}, status=404
+            )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+            return JsonResponse(
+                {'success': False, 'error': str(e)}, status=500
+            )
+    return JsonResponse(
+        {'success': False, 'error': 'Invalid request method'}, status=405
+    )
+
 
 @csrf_exempt
 @login_required
@@ -447,7 +584,13 @@ def update_position(request, item_id):
             item.save()
             return JsonResponse({'success': True})
         except Item.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Item not found'}, status=404)
+            return JsonResponse(
+                {'success': False, 'error': 'Item not found'}, status=404
+            )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+            return JsonResponse(
+                {'success': False, 'error': str(e)}, status=500
+            )
+    return JsonResponse(
+        {'success': False, 'error': 'Invalid request method'}, status=405
+    )
